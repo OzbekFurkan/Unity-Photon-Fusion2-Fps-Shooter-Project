@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e39648579c099429d8280fa5a0fe4abf, type: 3}
+  m_Name: FamasRecoil
+  m_EditorClassIdentifier: 
+  pattern:
+  - {x: 0, y: 0}
+  - {x: 0.8, y: -2.9}
+  - {x: -0.7, y: -6.4}
+  - {x: 1.6, y: -9.4}
+  - {x: 0.6, y: -12.5}
+  - {x: -3.1, y: -13.7}
+  - {x: -4.6, y: -14.9}
+  - {x: -3.5, y: -16.5}
+  - {x: 0.6, y: -16.3}
+  - {x: 3.6, y: -15.4}
+  - {x: 6.6, y: -14.3}
+  - {x: 2.3, y: -14}
+  recoilPatternForVisualization:
+  - {x: 145, y: 331}
+  - {x: 153, y: 302}
+  - {x: 138, y: 267}
+  - {x: 161, y: 237}
+  - {x: 151, y: 206}
+  - {x: 114, y: 194}
+  - {x: 99, y: 182}
+  - {x: 110, y: 166}
+  - {x: 151, y: 168}
+  - {x: 181, y: 177}
+  - {x: 211, y: 188}
+  - {x: 168, y: 191}

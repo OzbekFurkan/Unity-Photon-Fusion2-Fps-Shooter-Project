@@ -15,8 +15,8 @@ TagManager:
   - LocalPlayerModel
   - Pickupable
   - HitBox
-  - 
-  - 
+  - Minimap
+  - PlayerModel
   - 
   - 
   - 

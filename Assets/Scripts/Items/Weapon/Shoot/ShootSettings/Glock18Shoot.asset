@@ -16,7 +16,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 119
   hitDistance: 100
-  hitDamage: 1
+  hitDamage: 15
   isAuto: 0
   recoilPattern: {fileID: 11400000, guid: f0e662103bb36475696b7cacb565e24f, type: 2}
   recoilIntensity: 1

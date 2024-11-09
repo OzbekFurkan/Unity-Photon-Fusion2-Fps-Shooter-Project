@@ -168,7 +168,7 @@ namespace Item
                     weaponDataMono.weaponShootSettings.recoilSpeed);
             }
 
-            if(GetComponent<InterractComponent>().isItemActive)
+            if(GetComponent<InterractComponent>().isItemActive && Object.HasInputAuthority)
             {
                 if(Network.NetworkPlayer.Local)
                     Network.NetworkPlayer.Local.GetComponent<CharacterInputHandler>().isAuto = weaponDataMono.weaponShootSettings.isAuto;

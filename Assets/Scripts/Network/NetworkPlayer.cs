@@ -11,6 +11,8 @@ namespace Network
         public static NetworkPlayer Local { get; set; }
 
         public Transform playerModel;
+        public Camera localCamera;
+        public Camera minimapCamera;
 
         // Start is called before the first frame update
         void Start()
@@ -32,8 +34,8 @@ namespace Network
             else
             {
                 //Disable the camera if we are not the local player
-                Camera localCamera = GetComponentInChildren<Camera>();
                 localCamera.enabled = false;
+                minimapCamera.enabled = false;
 
                 //Only 1 audio listner is allowed in the scene so disable remote players audio listner
                 AudioListener audioListener = GetComponentInChildren<AudioListener>();

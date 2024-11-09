@@ -38,7 +38,6 @@ namespace Item
             }
         }
         #endregion
-
         public override void FixedUpdateNetwork()
         {
             //Get the input from the network
@@ -83,6 +82,19 @@ namespace Item
             }
 
             currentSlot = newSlot;
+        }
+
+        //it causes error in dropping item because of the parent sync. Try to solve it.
+        public void CheckForNonEmptySlot()
+        {
+            for(int i=0; i<weaponHolder.childCount-1; i++)
+            {
+                if (weaponHolder.GetChild(i).childCount > 0)
+                {
+                    SwitchSlot(i);
+                    return;
+                }
+            }
         }
 
     }

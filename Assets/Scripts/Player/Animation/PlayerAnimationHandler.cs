@@ -73,7 +73,7 @@ namespace Player
             }
             else
             {
-                //TODO:adjust empty hand position here
+                //empty hand
             }
 
         }

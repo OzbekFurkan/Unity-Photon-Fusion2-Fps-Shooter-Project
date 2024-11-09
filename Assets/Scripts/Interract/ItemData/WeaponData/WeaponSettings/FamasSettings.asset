@@ -15,7 +15,7 @@ MonoBehaviour:
   itemId: 4
   itemPrefab: {fileID: 5885649562666882474, guid: 437547e12daa64220baa07e9edba3a36, type: 3}
   itemSlot: 0
-  itemIcon: {fileID: 21300000, guid: d3f33adb909e26443914391fba875e4c, type: 3}
+  itemIcon: {fileID: 21300000, guid: 42d326ffd874042988cace818d51e9e6, type: 3}
   ammo: 30
   fullAmmo: 90
   weaponShootSettings: {fileID: 11400000, guid: 602050b589b73452eba566b1ff502b2f, type: 2}

@@ -25,7 +25,7 @@ namespace Player
         PlayerRef killerPlayer;
         GameObject killerGameObject;
 
-        [Header("UI")]
+        [Header("DeathUI")]
         public Color uiOnHitColor;
         public Image uiOnHitImage;
 
@@ -100,8 +100,6 @@ namespace Player
         {
             if (!isInitialized)
                 return;
-
-
         }
 
         #endregion
@@ -124,7 +122,6 @@ namespace Player
             playerModel.gameObject.SetActive(false);
             hitboxRoot.HitboxRootActive = false;
             characterMovementHandler.SetCharacterControllerEnabled(false);
-
             Instantiate(deathGameObjectPrefab, transform.position, Quaternion.identity);
 
             //Öldü bilgisi observer pattern ile inventory managerda metod çağıracak.
@@ -135,7 +132,10 @@ namespace Player
             Debug.Log($"{Time.time} OnRevive");
 
             if (Object.HasInputAuthority)
+            {
                 uiOnHitImage.color = new Color(0, 0, 0, 0);
+            }
+                
 
             playerModel.gameObject.SetActive(true);
             hitboxRoot.HitboxRootActive = true;
@@ -153,20 +153,18 @@ namespace Player
                 return;
 
             HP -= damage;
-            playerDataMono.HP--;
-
+            playerDataMono.HP-=damage;
             Debug.Log($"{Time.time} {transform.name} took damage got {HP} left ");
 
             //Player died
-            if (HP <= 0)
+            if (HP <= 0 || HP >startingHP)
             {
                 Debug.Log($"{Time.time} {transform.name} died");
 
                 killerPlayer = shooter;
                 killerGameObject = shooterGameObject;
-
                 StartCoroutine(ServerReviveCO());
-
+                
                 isDead = true;
             }
         }

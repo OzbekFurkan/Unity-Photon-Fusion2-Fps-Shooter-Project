@@ -4,6 +4,9 @@ using UnityEngine;
 using Fusion;
 using UnityEngine.UI;
 using Interract;
+using ProjectUI;
+using InventorySpace;
+using ProjectGameMode;
 
 namespace Player
 {
@@ -14,7 +17,7 @@ namespace Player
         [Networked]
         public bool isDead { get; set; }
         [Networked]
-        byte HP { get; set; }//runtime hp value
+        public byte HP { get; set; }//runtime hp value
 
         [Header("Player Datas")]
         [SerializeField] PlayerDataMono playerDataMono;
@@ -37,8 +40,9 @@ namespace Player
         [Header("Other Components")]
         HitboxRoot hitboxRoot;
         CharacterMovementHandler characterMovementHandler;
+
         //Event
-        public delegate void OnPlayerDeath(PlayerRef killer, GameObject killerGO);
+        public delegate void OnPlayerDeath(PlayerRef killer, GameObject killerGO, GameObject deathGO);
         public event OnPlayerDeath onPlayerDeath;
         public delegate void OnPlayerRevived();
         public event OnPlayerRevived onPlayerRevived;
@@ -125,7 +129,7 @@ namespace Player
             Instantiate(deathGameObjectPrefab, transform.position, Quaternion.identity);
 
             //Öldü bilgisi observer pattern ile inventory managerda metod çağıracak.
-            onPlayerDeath?.Invoke(killerPlayer, killerGameObject);
+            onPlayerDeath?.Invoke(killerPlayer, killerGameObject, gameObject);
         }
         private void OnRevive()
         {
@@ -146,7 +150,8 @@ namespace Player
 
         //This function is called by other players and the changes in the hp value is handled above
         //Function only called on the server
-        public void OnTakeDamage(PlayerRef shooter, GameObject shooterGameObject, byte damage)
+        [Rpc(RpcSources.StateAuthority, RpcTargets.StateAuthority)]
+        public void OnTakeDamageRpc(PlayerRef shooter, NetworkId shooterNetworkId, byte damage)
         {
             //Only take damage while alive
             if (isDead)
@@ -157,12 +162,22 @@ namespace Player
             Debug.Log($"{Time.time} {transform.name} took damage got {HP} left ");
 
             //Player died
-            if (HP <= 0 || HP >startingHP)
+            if (HP <= 0 || HP >100)
             {
                 Debug.Log($"{Time.time} {transform.name} died");
 
                 killerPlayer = shooter;
-                killerGameObject = shooterGameObject;
+                //leaderboard
+                killerGameObject = Runner.FindObject(shooterNetworkId).gameObject;
+                killerGameObject.GetComponent<PlayerDataMono>()?.AddKill();
+                playerDataMono.AddDeath();
+                //killtable
+                GameObject.FindAnyObjectByType<KillTableManager>()?.AddRawToKilltableRpc(
+                killerGameObject.GetComponent<PlayerDataMono>()?.GetUsername(),
+                playerDataMono.GetUsername());
+                //team score for deathmatch
+                GameObject.FindAnyObjectByType<Deathmatch>()?.UpdateTeamScoresRpc(playerDataMono.playerData.team);
+
                 StartCoroutine(ServerReviveCO());
                 
                 isDead = true;

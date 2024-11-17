@@ -22,6 +22,8 @@ namespace Network
         public NetworkBool isKnifeSlotButtonPressed;
         public NetworkBool isBombSlotButtonPressed;
         public NetworkBool isOtherSlotButtonPressed;
+        //UI
+        public NetworkBool isLeaderboardButtonPressed;
 
     }
 }

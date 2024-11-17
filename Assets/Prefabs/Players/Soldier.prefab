@@ -408,8 +408,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 3847644656005162619}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.18221463, y: 0.5669666, z: 0.65874946, w: -0.459778}
+  m_LocalPosition: {x: 0.13254759, y: 1.2801485, z: 0.80107206}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -459,11 +459,11 @@ GameObject:
   - component: {fileID: 1852728354347325528}
   - component: {fileID: 2236272646455254436}
   - component: {fileID: 6239717404664747632}
-  - component: {fileID: 5341444214855051310}
   - component: {fileID: 4668899232703723864}
   - component: {fileID: 6863025440145560926}
   - component: {fileID: 7171961804328239409}
   - component: {fileID: 4490125533690408939}
+  - component: {fileID: 5341444214855051310}
   m_Layer: 0
   m_Name: Soldier
   m_TagString: Untagged
@@ -515,11 +515,11 @@ MonoBehaviour:
   - {fileID: 1852728354347325528}
   - {fileID: 2236272646455254436}
   - {fileID: 6239717404664747632}
-  - {fileID: 5341444214855051310}
   - {fileID: 4668899232703723864}
   - {fileID: 6863025440145560926}
   - {fileID: 7171961804328239409}
   - {fileID: 4490125533690408939}
+  - {fileID: 5341444214855051310}
   - {fileID: 819276954179057302}
   - {fileID: 4876477102390311873}
   - {fileID: 5340124356156897827}
@@ -586,7 +586,6 @@ MonoBehaviour:
   braking: 30
   maxSpeed: 6
   rotationSpeed: 200
-  viewUpDownRotationSpeed: 200
   _controller: {fileID: 2694424080956736762}
 --- !u!114 &6992278167077286510
 MonoBehaviour:
@@ -619,6 +618,7 @@ MonoBehaviour:
   isKnifeSlotButtonPressed: 0
   isBombSlotButtonPressed: 0
   isOtherSlotButtonPressed: 0
+  isLeaderboardButtonPressed: 0
 --- !u!114 &1852728354347325528
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -650,6 +650,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isDead: 0
+  _HP: 0
   playerDataMono: {fileID: 4668899232703723864}
   uiOnHitColor: {r: 0.8962264, g: 0.2747864, b: 0.2747864, a: 0.9411765}
   uiOnHitImage: {fileID: 3971609654798122313}
@@ -669,26 +670,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inventoryManager: {fileID: 6863025440145560926}
   weaponHolder: {fileID: 7055861605000821120}
---- !u!114 &5341444214855051310
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4398370856537798957}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ab50e7c1cbaf0420f86717b3e8ea9593, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  playerDataMono: {fileID: 4668899232703723864}
-  playerUi: {fileID: 6847442062705736821}
   itemSwitch: {fileID: 7171961804328239409}
-  weaponHolder: {fileID: 1627699624030451874}
-  ammoText: {fileID: 223482213978595145}
-  hpBarSlider: {fileID: 2309885018092976016}
-  slotUI: {fileID: 2960227397243888534}
-  blankSlotIcon: {fileID: 21300000, guid: 4e130a47c6e2a4fd3aad52e2afbbe122, type: 3}
 --- !u!114 &4668899232703723864
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -701,12 +683,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8acba30f359e4fa0924ec9d64ef9d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: 
   itemId: 0
   itemPrefab: {fileID: 4398370856537798957}
   itemIcon: {fileID: 0}
   itemSlot: 0
   playerDataSettings: {fileID: 11400000, guid: ffdc8d8e5c4334f6eac45a5e56062112, type: 2}
-  team: 0
   HP: 0
 --- !u!114 &6863025440145560926
 MonoBehaviour:
@@ -723,6 +705,7 @@ MonoBehaviour:
   StartingWeapon: {fileID: 2379902543376957109, guid: fc9c47ef068abce44afbb23a75a3d1c0, type: 3}
   PIM: {fileID: 6239717404664747632}
   hpHandler: {fileID: 2236272646455254436}
+  itemSwitch: {fileID: 7171961804328239409}
 --- !u!114 &7171961804328239409
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -755,6 +738,29 @@ MonoBehaviour:
   weaponHolder: {fileID: 1627699624030451874}
   leftHandMoverTarget: {fileID: 2229666032405605349}
   rightHandMoverTarget: {fileID: 9089325640019713482}
+--- !u!114 &5341444214855051310
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4398370856537798957}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab50e7c1cbaf0420f86717b3e8ea9593, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerDataMono: {fileID: 4668899232703723864}
+  playerUi: {fileID: 6847442062705736821}
+  itemSwitch: {fileID: 7171961804328239409}
+  hPHandler: {fileID: 2236272646455254436}
+  weaponHolder: {fileID: 1627699624030451874}
+  ammoText: {fileID: 223482213978595145}
+  hpBarSlider: {fileID: 2309885018092976016}
+  slotUI: {fileID: 2960227397243888534}
+  blankSlotIcon: {fileID: 21300000, guid: 4e130a47c6e2a4fd3aad52e2afbbe122, type: 3}
+  leaderboard: {fileID: 4235556975688371362}
+  leaderboardRaw: {fileID: 4092811925613574571, guid: 77d49a6d78c34483bb7555b9ecb0df8a, type: 3}
 --- !u!1 &4649520141373087188
 GameObject:
   m_ObjectHideFlags: 0
@@ -1132,8 +1138,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7481620881167968531}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.37949592, y: -0.6449981, z: -0.44527477, w: 0.49162054}
+  m_LocalPosition: {x: 0.6261504, y: 1.2222259, z: -0.03286505}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1622,6 +1628,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!224 &4235556975688371362 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 2254507441286675210, guid: 9a3e7fc0afb14d44bae17e75a08145a0, type: 3}
+  m_PrefabInstance: {fileID: 2706142423570495400}
+  m_PrefabAsset: {fileID: 0}
 --- !u!224 &4586486997562105319 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1884861643040205391, guid: 9a3e7fc0afb14d44bae17e75a08145a0, type: 3}

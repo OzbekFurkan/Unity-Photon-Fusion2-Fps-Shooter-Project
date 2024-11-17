@@ -8,6 +8,7 @@ using Utilitiy;
 using Interract;
 using Player;
 using System;
+using Item;
 
 namespace InventorySpace
 {
@@ -19,6 +20,7 @@ namespace InventorySpace
 
         [SerializeField] private PlayerInterractManager PIM;
         [SerializeField] private HPHandler hpHandler;
+        [SerializeField] private ItemSwitch itemSwitch;
 
         bool isPlayerDeath;
 
@@ -35,6 +37,7 @@ namespace InventorySpace
                 Debug.Log("item sayisi: " + items.Count);
                 foreach (GameObject item in items)
                 {
+                    itemSwitch.SwitchSlot(item.GetComponent<ItemDataMono>().itemSlot);
                     item.GetComponent<InterractComponent>().DropItemRpc();
                 }
             }
@@ -67,7 +70,7 @@ namespace InventorySpace
             inventory.AddItem(dataMono);
         }
 
-        public void PlayerDied(PlayerRef killer, GameObject killerGameObject)
+        public void PlayerDied(PlayerRef killer, GameObject killerGameObject, GameObject deathGO)
         {
             Debug.Log("died notification");
             isPlayerDeath = true;

@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d476aa01daeb429991bb017a1179108, type: 3}
+  m_Name: Glock18Settings
+  m_EditorClassIdentifier: 
+  itemId: 0
+  itemName: Glock-18
+  itemPrefab: {fileID: 2379902543376957109, guid: fc9c47ef068abce44afbb23a75a3d1c0, type: 3}
+  itemSlot: 1
+  itemIcon: {fileID: 21300000, guid: f39cbcafa06b54c3cb5ef5eb5ae4e27c, type: 3}
+  ammo: 20
+  fullAmmo: 40
+  weaponShootSettings: {fileID: 11400000, guid: ee7264b39303141b697db335e7b88721, type: 2}

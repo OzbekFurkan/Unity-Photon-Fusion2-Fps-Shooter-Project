@@ -23,3 +23,4 @@ MonoBehaviour:
   knifeSlotKey: 51
   bombSlotKey: 52
   otherSlotKey: 53
+  leaderboardKey: 9

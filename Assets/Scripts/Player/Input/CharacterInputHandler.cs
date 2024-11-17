@@ -26,6 +26,8 @@ namespace Player
         [HideInInspector] public bool isKnifeSlotButtonPressed;
         [HideInInspector] public bool isBombSlotButtonPressed;
         [HideInInspector] public bool isOtherSlotButtonPressed;
+        //UI
+        [HideInInspector] public bool isLeaderboardButtonPressed;
 
         //Other components
         LocalCameraHandler localCameraHandler;
@@ -85,6 +87,12 @@ namespace Player
             if (Input.GetKeyDown(inputSettings.otherSlotKey))
                 isOtherSlotButtonPressed = true;
 
+            //UI
+            if (Input.GetKeyDown(inputSettings.leaderboardKey))
+                isLeaderboardButtonPressed = true;
+            else if (Input.GetKeyUp(inputSettings.leaderboardKey))
+                isLeaderboardButtonPressed = false;
+
             //Set view
             localCameraHandler.SetViewInputVector(viewInputVector);
 
@@ -118,6 +126,9 @@ namespace Player
             networkInputData.isBombSlotButtonPressed = isBombSlotButtonPressed;
             networkInputData.isOtherSlotButtonPressed = isOtherSlotButtonPressed;
 
+            //UI
+            networkInputData.isLeaderboardButtonPressed = isLeaderboardButtonPressed;
+
             //Reset variables now that we have read their states
             isJumpButtonPressed = false;
             isFireButtonPressed = false;
@@ -128,6 +139,7 @@ namespace Player
             isKnifeSlotButtonPressed = false;
             isBombSlotButtonPressed = false;
             isOtherSlotButtonPressed = false;
+            
 
             return networkInputData;
         }

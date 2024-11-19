@@ -21,15 +21,6 @@ namespace Interract
         [SerializeField] private GameObject weaponHolder;
         [SerializeField] private ItemSwitch itemSwitch;
 
-        [Header("Flags")]
-        private bool isBusy = false;
-
-        //events
-        public delegate void OnPickUpItem(int itemId, dynamic data);
-        public event OnPickUpItem onPickUpItem;
-        public delegate void OnDropItem(int itemId, dynamic data);
-        public event OnDropItem onDropItem;
-
         public override void Spawned()
         {
             detectedInfo = new List<LagCompensatedHit>();
@@ -37,96 +28,87 @@ namespace Interract
 
         public override void FixedUpdateNetwork()
         {
-            if (isBusy) return;
+            if (!Object.HasInputAuthority)
+                return;
 
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {
                 if (networkInputData.isDropButtonPressed)
                 {
-                    StartCoroutine(HandleDrop());
+                    HandleDrop();
                 }
 
                 if (networkInputData.isPickUpButtonPressed)
                 {
-                    StartCoroutine(HandlePickup());
+                    HandlePickup();
                 }
 
             }
 
         }
 
-        private IEnumerator HandleDrop()
+        private void HandleDrop()
         {
-            isBusy = true;
-            foreach (GameObject item in inventoryManager.inventory.GetAllItemObjects())
+            foreach (GameObject item in inventoryManager.GetAllItemObjects())
             {
                 InterractComponent interractComponent = item.GetComponent<InterractComponent>();
                 if (interractComponent.isItemActive)
                 {
                     interractComponent.DropItemRpc();
-                    yield return new WaitUntil(()=>interractComponent.isDropComplete);
+                    return;
                 }
             }
-            isBusy = false;
         }
 
 
 
-        private IEnumerator HandlePickup()
+        private void HandlePickup()
         {
-            isBusy = true;
             layerMask = LayerMask.GetMask("Pickupable");
             Runner.LagCompensation.OverlapSphere(transform.position, 3, Object.InputAuthority, detectedInfo, layerMask, HitOptions.IncludePhysX);
             if (detectedInfo != null && detectedInfo.Count > 0)
             {
                 Debug.Log(detectedInfo.Count);
-                LagCompensatedHit info = detectedInfo[0];
-                for (int i=0; i<detectedInfo.Count-1; i++)
+                foreach (LagCompensatedHit info in detectedInfo)
                 {
-                    info = detectedInfo[i].Distance < detectedInfo[i + 1].Distance ? detectedInfo[i] : detectedInfo[i + 1];
-                }
-                
-                if (info.Collider == null)
-                {
-                    isBusy = false;
-                    yield break;
-                }
+                    if (info.Collider == null)
+                        continue;
 
-                info.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
-                Debug.Log("component alindi " + info.Collider.transform.root.name);
-                if (grabbedItem != null)
-                {
-                    Debug.Log("item alindi");
-                    info.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
-                    Debug.Log("slot uygunluk: " + inventoryManager.inventory.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
-                    if (itemData != null && inventoryManager.inventory.SlotEmptyCheck(itemData, weaponHolder))
+                    info.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
+                    Debug.Log("component alindi " + info.Collider.transform.root.name);
+                    if (grabbedItem != null)
                     {
-                        itemSwitch.SwitchSlot(itemData.itemSlot);
-                        grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
-                        yield return new WaitUntil(() => grabbedItem.isPickupComplete);
+                        if (grabbedItem.IsPickedUp)
+                            continue;
+
+                        Debug.Log("item alindi");
+                        info.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
+                        Debug.Log("slot uygunluk: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
+                        if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
+                        {
+                            grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
+                            return;
+                        }
                     }
+                    else
+                        continue;
+
+                    Debug.Log("bos gecti");
                 }
-                Debug.Log("bos gecti");
-                
             }
-            isBusy = false;
         }
 
-        public void SendPickUpCallBack<TDataMono>(NetworkId itemId) where TDataMono:ItemDataMono
+        public void SendPickUpCallBack(int itemId, NetworkId networkId)
         {
             Debug.Log("pickup callback yollandi");
-            GameObject itemGO = Runner.FindObject(itemId).gameObject;
-            TDataMono dataMono = itemGO.GetComponent<TDataMono>();
-            onPickUpItem.Invoke(dataMono.itemId, dataMono);
+            inventoryManager.ItemPicked(itemId, networkId);
             
         }
 
-        public void SendDropCallBack<TDataMono>(NetworkId itemId) where TDataMono : ItemDataMono
+        public void SendDropCallBack(int itemId)
         {
-            GameObject itemGO = Runner.FindObject(itemId).gameObject;
-            TDataMono dataMono = itemGO.GetComponent<TDataMono>();
-            onDropItem.Invoke(dataMono.itemId, dataMono);
+            inventoryManager.ItemDropped(itemId);
         }
        
 

@@ -14,72 +14,132 @@ namespace InventorySpace
 {
     public class InventoryManager : NetworkBehaviour
     {
-        [HideInInspector] public Inventory inventory;
+        [Networked, OnChangedRender(nameof(OnInventoryChanged))] public NetworkDictionary<int, NetworkId> inventory { get; } = new NetworkDictionary<int, NetworkId>();
 
         public GameObject StartingWeapon;
 
         [SerializeField] private PlayerInterractManager PIM;
         [SerializeField] private HPHandler hpHandler;
         [SerializeField] private ItemSwitch itemSwitch;
+        [SerializeField] private Transform weaponHolder;
 
-        bool isPlayerDeath;
+        [Networked, OnChangedRender(nameof(OnPlayerDiedRemote))] NetworkBool isPlayerDied { get; set; }
+
+        public void OnPlayerDiedRemote()
+        {
+            for (int i = 0; i < weaponHolder.childCount; i++)
+            {
+                weaponHolder.GetChild(i).gameObject.SetActive(true);
+            }
+        }
+        public void OnInventoryChanged()
+        {
+            DisplayInventory();
+        }
 
         public override void Spawned()
         {
-            inventory = new Inventory();
-            isPlayerDeath = false;
+            isPlayerDied = false;
+        }
+
+        #region INVENTORY_OPERATIONS
+        public void AddItem(int itemId , NetworkId networkId)
+        {
+            inventory.Add(itemId, networkId);
+        }
+        public void DeleteItem(int itemId)
+        {
+            inventory.Remove(itemId);
+        }
+
+        /// <summary>
+        /// This method can be used to check if the slot is available while picking up an item.
+        /// </summary>
+        /// <param name="itemData">This object type must be derived from ItemDataMono class and casted into ItemDataMono class</param>
+        /// <returns>Returns true if the slot is available</returns>
+        public bool SlotEmptyCheck(ItemDataMono itemData, GameObject weaponHolder)
+        {
+            return !(weaponHolder.transform.GetChild(itemData.itemSlot).childCount > 0);
+        }
+
+        /// <summary>
+        /// Clears all items from inventory.
+        /// </summary>
+        public void ClearAllItems()
+        {
+            inventory.Clear();
+        }
+
+        /// <summary>
+        /// Returns all items that possessed by player
+        /// </summary>
+        /// <returns></returns>
+        public List<GameObject> GetAllItemObjects()
+        {
+            List<GameObject> items = new List<GameObject>();
+            foreach (KeyValuePair<int, NetworkId> kvp in inventory)
+            {
+                GameObject item_inv = Runner.FindObject(kvp.Value).gameObject;
+                items.Add(item_inv);
+            }
+            return items;
+        }
+        #endregion
+
+        #region CALLBACKS
+        public void ItemDropped(int itemId)
+        {
+            Debug.Log("item envanterden çıkarılıyor");
+            DeleteItem(itemId);
+            DisplayInventory();
+        }
+
+        public void ItemPicked(int itemId, NetworkId networkId)
+        {
+            Debug.Log("item envantere alınıyor");
+            AddItem(itemId, networkId);
+            DisplayInventory();
+        }
+        public void DisplayInventory()
+        {
+            foreach (GameObject item in GetAllItemObjects())
+            {
+                Debug.Log(GetComponent<PlayerDataMono>().playerData.username+" envanter bilgisi: " + item.name);
+            }
         }
         public override void FixedUpdateNetwork()
         {
-            if(isPlayerDeath)
+            if (isPlayerDied)
             {
-                List<GameObject> items = inventory.GetAllItemObjects();
-                Debug.Log("item sayisi: " + items.Count);
-                foreach (GameObject item in items)
+                for (int i = 0; i < weaponHolder.childCount; i++)
                 {
-                    itemSwitch.SwitchSlot(item.GetComponent<ItemDataMono>().itemSlot);
-                    item.GetComponent<InterractComponent>().DropItemRpc();
+                    weaponHolder.GetChild(i).gameObject.SetActive(true);
+                    if (weaponHolder.GetChild(i).childCount > 0)
+                    {
+                        GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
+                        item.TryGetComponent<InterractComponent>(out var interractComponent);
+                        if (interractComponent)
+                        {
+                            interractComponent.isItemActive = true;
+                            interractComponent.DropItemRpc();
+                        }
+
+                    }
+
                 }
             }
         }
-
-        private void OnEnable()
-        {
-            hpHandler.onPlayerDeath += PlayerDied;
-            hpHandler.onPlayerRevived += PlayerRevived;
-            PIM.onPickUpItem += ItemPicked;
-            PIM.onDropItem += ItemDropped;
-        }
-        private void OnDisable()
-        {
-            hpHandler.onPlayerDeath -= PlayerDied;
-            hpHandler.onPlayerRevived -= PlayerRevived;
-            PIM.onPickUpItem -= ItemPicked;
-            PIM.onDropItem -= ItemDropped;
-        }
-
-        public void ItemDropped(int itemId, dynamic dataMono)
-        {
-            Debug.Log("item envanterden çıkarılıyor");
-            inventory.DeleteItem(itemId);
-        }
-
-        public void ItemPicked(int itemId, dynamic dataMono)
-        {
-            Debug.Log("item envantere alınıyor");
-            inventory.AddItem(dataMono);
-        }
-
-        public void PlayerDied(PlayerRef killer, GameObject killerGameObject, GameObject deathGO)
+        public void PlayerDied()
         {
             Debug.Log("died notification");
-            isPlayerDeath = true;
+            isPlayerDied = true;
             
+
         }
         public void PlayerRevived()
         {
-            isPlayerDeath = false;
+            isPlayerDied = false;
         }
-
+        #endregion
     }
 }

@@ -7,6 +7,7 @@ using Interract;
 using ProjectUI;
 using InventorySpace;
 using ProjectGameMode;
+using Item;
 
 namespace Player
 {
@@ -21,6 +22,7 @@ namespace Player
 
         [Header("Player Datas")]
         [SerializeField] PlayerDataMono playerDataMono;
+        [SerializeField] ItemSwitch itemSwitch;
         byte startingHP;//it is used when player respawned
         bool isInitialized = false;
 
@@ -40,12 +42,7 @@ namespace Player
         [Header("Other Components")]
         HitboxRoot hitboxRoot;
         CharacterMovementHandler characterMovementHandler;
-
-        //Event
-        public delegate void OnPlayerDeath(PlayerRef killer, GameObject killerGO, GameObject deathGO);
-        public event OnPlayerDeath onPlayerDeath;
-        public delegate void OnPlayerRevived();
-        public event OnPlayerRevived onPlayerRevived;
+        [SerializeField] InventoryManager inventoryManager;
 
 
 
@@ -128,8 +125,8 @@ namespace Player
             characterMovementHandler.SetCharacterControllerEnabled(false);
             Instantiate(deathGameObjectPrefab, transform.position, Quaternion.identity);
 
-            //Öldü bilgisi observer pattern ile inventory managerda metod çağıracak.
-            onPlayerDeath?.Invoke(killerPlayer, killerGameObject, gameObject);
+            //Öldü bilgisi ile inventory managerda metod çağıracak.
+            inventoryManager.PlayerDied();
         }
         private void OnRevive()
         {
@@ -144,13 +141,14 @@ namespace Player
             playerModel.gameObject.SetActive(true);
             hitboxRoot.HitboxRootActive = true;
             characterMovementHandler.SetCharacterControllerEnabled(true);
-            onPlayerRevived?.Invoke();
+
+            inventoryManager.PlayerRevived();
         }
         #endregion
 
         //This function is called by other players and the changes in the hp value is handled above
         //Function only called on the server
-        [Rpc(RpcSources.StateAuthority, RpcTargets.StateAuthority)]
+        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void OnTakeDamageRpc(PlayerRef shooter, NetworkId shooterNetworkId, byte damage)
         {
             //Only take damage while alive
@@ -196,6 +194,7 @@ namespace Player
             //Reset variables
             HP = startingHP;
             isDead = false;
+            itemSwitch.SwitchSlot(itemSwitch.currentSlot);
         }
 
     }

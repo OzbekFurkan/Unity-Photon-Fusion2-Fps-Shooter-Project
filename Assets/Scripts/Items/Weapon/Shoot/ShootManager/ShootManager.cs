@@ -72,7 +72,8 @@ namespace Item
             StartCoroutine(FireEffectCO());
 
             //recoil aplied
-            ApplyRecoil();
+            if(Object.HasInputAuthority)
+                ApplyRecoil();
 
             float hitDistance = weaponDataMono.weaponShootSettings.hitDistance;
 
@@ -84,7 +85,7 @@ namespace Item
             {
                 Debug.Log($"{Time.time} {transform.name} hit hitbox {hitinfo.Hitbox.transform.root.name}");
 
-                if (Object.HasStateAuthority)
+                if(Object.HasStateAuthority)
                     hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamageRpc(Object.InputAuthority,
                         transform.root.root.root.gameObject.GetComponent<NetworkObject>().Id,
                         weaponDataMono.weaponShootSettings.hitDamage);

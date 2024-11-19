@@ -137,6 +137,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfbb8ee60a3745148387d91aa587699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  itemName: 
   itemId: 0
   itemPrefab: {fileID: 2379902543376957109}
   itemIcon: {fileID: 0}
@@ -164,8 +165,14 @@ MonoBehaviour:
   _isKinematicRig: 0
   _isTriggerCol: 0
   _isItemActive: 0
+  _isItemSetActive: 0
   itemRigidbody: {fileID: 6426134942824705690}
   boxCollider: {fileID: 3094727059586597539}
+  itemDataMono: {fileID: 6332640098777451399}
+  _isPickupComplete:
+    _value: 0
+  _isDropComplete:
+    _value: 0
 --- !u!54 &6426134942824705690
 Rigidbody:
   m_ObjectHideFlags: 0

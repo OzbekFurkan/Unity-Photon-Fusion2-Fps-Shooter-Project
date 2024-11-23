@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using UnityEngine.UI;
-using Interract;
-using ProjectUI;
-using InventorySpace;
-using ProjectGameMode;
-using Item;
+using GameModes.Common;
+using GameModes.Modes;
+using Player.Inventory;
 
 namespace Player
 {
@@ -88,7 +86,7 @@ namespace Player
             }
         }
 
-        #region HP_REDUCED
+        #region HP_REDUCED_REMOTE
         public void OnHPChanged(byte oldHP, byte newHP)
         {
             Debug.Log($"{Time.time} OnHPChanged value {newHP} : " + HP);
@@ -105,7 +103,7 @@ namespace Player
 
         #endregion
 
-        #region DEAD_STATE
+        #region DEAD_STATE_REMOTE
         public void OnStateChanged(bool isDeadOld, bool isDeadCurrent)
         {
             Debug.Log($"{Time.time} OnStateChanged isDead {isDeadCurrent}");
@@ -146,6 +144,7 @@ namespace Player
         }
         #endregion
 
+        #region TAKE_DAMAGE_SERVER
         //This function is called by other players and the changes in the hp value is handled above
         //Function only called on the server
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
@@ -196,7 +195,7 @@ namespace Player
             isDead = false;
             itemSwitch.SwitchSlot(itemSwitch.currentSlot);
         }
-
+        #endregion
     }
 }
 

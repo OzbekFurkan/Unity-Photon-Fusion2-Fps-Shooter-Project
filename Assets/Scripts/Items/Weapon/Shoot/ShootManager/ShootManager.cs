@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using Player;
-using Interract;
-using Network;
+using Item.Interract;
 
 namespace Item
 {
@@ -118,7 +117,7 @@ namespace Item
             if (weaponDataMono.weaponShootSettings.recoilPattern == null || weaponDataMono.weaponShootSettings.recoilPattern.pattern.Length == 0)
                 return;
 
-            cameraTransform = Network.NetworkPlayer.Local.gameObject.GetComponentInChildren<Camera>().transform;
+            cameraTransform = Player.NetworkPlayer.Local.gameObject.GetComponentInChildren<Camera>().transform;
 
             // Get the current recoil pattern point
             Vector2 recoilPoint = weaponDataMono.weaponShootSettings.recoilPattern.pattern[currentRecoilIndex];
@@ -171,8 +170,8 @@ namespace Item
 
             if(GetComponent<InterractComponent>().isItemActive && Object.HasInputAuthority)
             {
-                if(Network.NetworkPlayer.Local)
-                    Network.NetworkPlayer.Local.GetComponent<CharacterInputHandler>().isAuto = weaponDataMono.weaponShootSettings.isAuto;
+                if(Player.NetworkPlayer.Local)
+                    Player.NetworkPlayer.Local.GetComponent<CharacterInputHandler>().isAuto = weaponDataMono.weaponShootSettings.isAuto;
             }
         }
         #endregion

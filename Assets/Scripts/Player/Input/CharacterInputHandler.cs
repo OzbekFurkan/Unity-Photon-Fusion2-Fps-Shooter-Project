@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
-using Network;
 
 namespace Player
 {
@@ -54,6 +53,9 @@ namespace Player
             viewInputVector.x = Input.GetAxis("Mouse X");
             viewInputVector.y = Input.GetAxis("Mouse Y") * -1; //Invert the mouse look
 
+            //Set view
+            localCameraHandler.SetViewInputVector(viewInputVector);
+
             //Move input
             moveInputVector.x = Input.GetAxis("Horizontal");
             moveInputVector.y = Input.GetAxis("Vertical");
@@ -93,8 +95,7 @@ namespace Player
             else if (Input.GetKeyUp(inputSettings.leaderboardKey))
                 isLeaderboardButtonPressed = false;
 
-            //Set view
-            localCameraHandler.SetViewInputVector(viewInputVector);
+            
 
         }
 

@@ -2,15 +2,11 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
-using System.Reflection;
-using Network;
-using Utilitiy;
-using Interract;
-using Player;
-using System;
+using Player.Interract;
 using Item;
+using Item.Interract;
 
-namespace InventorySpace
+namespace Player.Inventory
 {
     public class InventoryManager : NetworkBehaviour
     {
@@ -25,11 +21,15 @@ namespace InventorySpace
 
         [Networked, OnChangedRender(nameof(OnPlayerDiedRemote))] NetworkBool isPlayerDied { get; set; }
 
+        #region NETWORK_SYNC
         public void OnPlayerDiedRemote()
         {
-            for (int i = 0; i < weaponHolder.childCount; i++)
+            if(isPlayerDied)
             {
-                weaponHolder.GetChild(i).gameObject.SetActive(true);
+                for (int i = 0; i < weaponHolder.childCount; i++)
+                {
+                    weaponHolder.GetChild(i).gameObject.SetActive(true);
+                }
             }
         }
         public void OnInventoryChanged()
@@ -41,6 +41,7 @@ namespace InventorySpace
         {
             isPlayerDied = false;
         }
+        #endregion
 
         #region INVENTORY_OPERATIONS
         public void AddItem(int itemId , NetworkId networkId)

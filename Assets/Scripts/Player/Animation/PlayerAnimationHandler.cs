@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using Item;
-using Interract;
 
 
 namespace Player
@@ -32,9 +31,12 @@ namespace Player
 
         public override void FixedUpdateNetwork()
         {
-            SetParameterVariables();
-            SetAnimatorParameters();
-            SetHandsOnItem();
+            if(Object.HasInputAuthority)
+            {
+                SetParameterVariables();
+                SetAnimatorParameters();
+                SetHandsOnItem();
+            }
         }
 
         #region SET_ANIMATION_PARAMETERS

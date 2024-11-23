@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Item
 {
-    public enum ItemId { Glock18, P2000, Ak57, M4A4, Famas,Granade, Smoke, Human, Soldier};
+    public enum ItemId { Glock18, P2000, Ak57, M4A4, Famas,Granade, Smoke, Alien, Soldier};
     public enum ItemSlot { Rifle, Pistol, Knife, Bomb, Other, None };
     public class ItemDataSettings : ScriptableObject
     {

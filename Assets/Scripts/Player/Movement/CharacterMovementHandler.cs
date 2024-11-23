@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
 using Utilitiy;
-using Network;
 
 namespace Player
 {
@@ -44,6 +43,7 @@ namespace Player
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {
+                
                 //Rotate the transform according to the client aim vector
                 transform.forward = networkInputData.aimForwardVector;
 

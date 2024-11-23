@@ -72,6 +72,7 @@ MonoBehaviour:
   _teamScoreA: 0
   _teamScoreB: 0
   timerManager: {fileID: 4439609816303777818}
+  GameOverUI: {fileID: 0}
 --- !u!114 &2273052606914520907
 MonoBehaviour:
   m_ObjectHideFlags: 0

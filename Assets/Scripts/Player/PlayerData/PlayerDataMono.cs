@@ -12,6 +12,7 @@ namespace Player
     {
         [SerializeField] PlayerDataSettings playerDataSettings;
         [HideInInspector] public byte HP;
+        [HideInInspector] public Team team;
         [Networked, HideInInspector] public ref PlayerDataStruct playerData => ref MakeRef<PlayerDataStruct>();
 
         public void Awake()
@@ -23,6 +24,7 @@ namespace Player
                 (int)playerDataSettings.itemSlot);
             
             HP = playerDataSettings.HP;
+            team = playerDataSettings.team;
         }
         protected override void SetBaseProps(string itemName, int itemId, GameObject itemPrefab, Sprite itemIcon, int itemSlot)
         {
@@ -46,21 +48,13 @@ namespace Player
         {
             playerData.playerRef = Object.InputAuthority;
             playerData.username = "Player " + UnityEngine.Random.Range(0, 100);
-            playerData.team = Team.Blue;
+            playerData.team = playerDataSettings.team;
             playerData.kill = 0;
             playerData.death = 0;
-        }
-        public void UpdateUsername(string username)
-        {
-            playerData.username = username;
         }
         public string GetUsername()
         {
             return playerData.username.ToString();
-        }
-        public void UpdateTeam(Team team)
-        {
-            playerData.team = team;
         }
         public void AddKill()
         {

@@ -8,6 +8,7 @@ using Item;
 
 namespace Player
 {
+    enum PlayerState { Available, Interracting, Reloading, Paused}
     public class PlayerDataMono : ItemDataMono
     {
         [SerializeField] PlayerDataSettings playerDataSettings;
@@ -35,19 +36,23 @@ namespace Player
             base.itemSlot = itemSlot;
         }
 
+        #region PLAYER_DATA_STRUCT_ACTIONS
         public override void Spawned()
         {
-            InitializePlayerDataStruct();
+            if(Object.HasInputAuthority)
+                InitializePlayerDataStructRpc(PlayerPrefs.GetString("username"));
+
             Debug.Log("username: " + playerData.username);
             Debug.Log("team: " + playerData.team.ToString());
             Debug.Log("kill: " + playerData.kill);
             Debug.Log("death: " + playerData.death);
         }
 
-        private void InitializePlayerDataStruct()
+        [Rpc(sources:RpcSources.InputAuthority, targets:RpcTargets.StateAuthority)]
+        private void InitializePlayerDataStructRpc(string username)
         {
             playerData.playerRef = Object.InputAuthority;
-            playerData.username = "Player " + UnityEngine.Random.Range(0, 100);
+            playerData.username = username;
             playerData.team = playerDataSettings.team;
             playerData.kill = 0;
             playerData.death = 0;
@@ -64,7 +69,7 @@ namespace Player
         {
             playerData.death++;
         }
-
+        #endregion
 
     }
 }

@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &803255532471994056
+--- !u!1 &1337944121344549671
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,24 +8,24 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5280040353443513043}
-  - component: {fileID: 5377699274894075536}
-  - component: {fileID: 8818495792767405836}
-  - component: {fileID: 4756002005593606367}
+  - component: {fileID: 6800829265807244046}
+  - component: {fileID: 2677334782697932273}
+  - component: {fileID: 6187241013990525337}
+  - component: {fileID: 1113992476380982632}
   m_Layer: 0
-  m_Name: Network Runner PF
+  m_Name: NetworkRunnerPrefab
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5280040353443513043
+--- !u!4 &6800829265807244046
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 803255532471994056}
+  m_GameObject: {fileID: 1337944121344549671}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -34,25 +34,25 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5377699274894075536
+--- !u!114 &2677334782697932273
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 803255532471994056}
+  m_GameObject: {fileID: 1337944121344549671}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: -1199893898, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
---- !u!114 &8818495792767405836
+--- !u!114 &6187241013990525337
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 803255532471994056}
+  m_GameObject: {fileID: 1337944121344549671}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 7b5a1ff9dee264bfd829a39e6542dcbd, type: 3}
@@ -63,18 +63,15 @@ MonoBehaviour:
   ClientPhysicsSimulation: 0
   DeltaTimeMultiplier: 1
   SetUnityFixedTimestep: 0
---- !u!114 &4756002005593606367
+--- !u!114 &1113992476380982632
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 803255532471994056}
+  m_GameObject: {fileID: 1337944121344549671}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d8518c657266a04fb595c5333a3451b, type: 3}
+  m_Script: {fileID: 11500000, guid: c36e36b65042bd64e9687f9cc71ef580, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SoldierPlayerPrefab: {fileID: 8439091692384082190, guid: 913e1b08620d21841b5a2c4a29553dd7, type: 3}
-  AlienPlayerPrefab: {fileID: 8439091692384082190, guid: bac46f4933c374c8290788fa2fc6ce02, type: 3}
-  selectedTeam: 1

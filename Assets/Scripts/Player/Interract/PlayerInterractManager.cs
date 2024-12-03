@@ -19,9 +19,13 @@ namespace Player.Interract
         [SerializeField] private GameObject weaponHolder;
         [SerializeField] private ItemSwitch itemSwitch;
 
+        //mutex
+        [Networked] bool isAvailable { get; set; }
+
         public override void Spawned()
         {
             detectedInfo = new List<LagCompensatedHit>();
+            isAvailable = true;
         }
 
         public override void FixedUpdateNetwork()
@@ -51,8 +55,9 @@ namespace Player.Interract
             foreach (GameObject item in inventoryManager.GetAllItemObjects())
             {
                 InterractComponent interractComponent = item.GetComponent<InterractComponent>();
-                if (interractComponent.isItemActive)
+                if (interractComponent.isItemActive && isAvailable)
                 {
+                    isAvailable = false;
                     interractComponent.DropItemRpc();
                     return;
                 }
@@ -83,8 +88,9 @@ namespace Player.Interract
                         Debug.Log("item alindi");
                         info.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
                         Debug.Log("slot uygunluk: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
-                        if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
+                        if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder) && isAvailable)
                         {
+                            isAvailable = false;
                             grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
                             return;
                         }
@@ -101,12 +107,13 @@ namespace Player.Interract
         {
             Debug.Log("pickup callback yollandi");
             inventoryManager.ItemPicked(itemId, networkId);
-            
+            isAvailable = true;
         }
 
         public void SendDropCallBack(int itemId)
         {
             inventoryManager.ItemDropped(itemId);
+            isAvailable = true;
         }
        
 

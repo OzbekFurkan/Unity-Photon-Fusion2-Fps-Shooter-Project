@@ -904,6 +904,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8dc0bf273654de28cbfeb9dfd907be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cameraTransform: {fileID: 1002878860943196849}
   inventoryManager: {fileID: 6863025440145560926}
   weaponHolder: {fileID: 7055861605000821120}
   itemSwitch: {fileID: 7171961804328239409}

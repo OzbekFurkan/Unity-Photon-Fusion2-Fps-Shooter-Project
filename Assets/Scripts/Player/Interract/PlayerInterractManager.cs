@@ -5,13 +5,15 @@ using Fusion;
 using Player.Inventory;
 using Item.Interract;
 using Item;
+using TMPro;
+using UnityEngine.UI;
 
 namespace Player.Interract
 {
     public class PlayerInterractManager : NetworkBehaviour
     {
-        [Header("Pickup Circle")]
-        List<LagCompensatedHit> detectedInfo;
+        [Header("Pickup")]
+        [Tooltip("The transform of the gameobject that has Camera component"), SerializeField] private Transform cameraTransform;
         LayerMask layerMask;
 
         [Header("Required Components")]
@@ -22,16 +24,29 @@ namespace Player.Interract
         //mutex
         [Networked] bool isAvailable { get; set; }
 
+        #region NETWORK_SYNC
         public override void Spawned()
         {
-            detectedInfo = new List<LagCompensatedHit>();
+            if (Object.HasInputAuthority)
+            {
+                InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
+                foreach (InterractComponent item in allItems)
+                {
+                    item.OnRigChange();
+                    item.OnColChange();
+                }
+            }
             isAvailable = true;
         }
+        #endregion
 
+        #region PICKUP_DROP_CHECK
         public override void FixedUpdateNetwork()
         {
             if (!Object.HasInputAuthority)
                 return;
+
+            CheckPickup();
 
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
@@ -40,16 +55,12 @@ namespace Player.Interract
                 {
                     HandleDrop();
                 }
-
-                if (networkInputData.isPickUpButtonPressed)
-                {
-                    HandlePickup();
-                }
-
             }
 
         }
+        #endregion
 
+        #region DROP
         private void HandleDrop()
         {
             foreach (GameObject item in inventoryManager.GetAllItemObjects())
@@ -63,46 +74,105 @@ namespace Player.Interract
                 }
             }
         }
+        #endregion
 
-
-
-        private void HandlePickup()
+        #region PICKUP
+        private void CheckPickup()
         {
             layerMask = LayerMask.GetMask("Pickupable");
-            Runner.LagCompensation.OverlapSphere(transform.position, 3, Object.InputAuthority, detectedInfo, layerMask, HitOptions.IncludePhysX);
-            if (detectedInfo != null && detectedInfo.Count > 0)
+            bool isHit = Runner.LagCompensation.Raycast(transform.position, cameraTransform.forward, 3, Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
+            if (isHit)
             {
-                Debug.Log(detectedInfo.Count);
-                foreach (LagCompensatedHit info in detectedInfo)
+                
+                if (detectedInfo.Collider == null)
+                    return;
+
+                detectedInfo.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
+                Debug.Log("component alindi " + detectedInfo.Collider.transform.root.name);
+                if (grabbedItem != null)
                 {
-                    if (info.Collider == null)
-                        continue;
+                    if (grabbedItem.IsPickedUp)
+                        return;
+                        
 
-                    info.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
-                    Debug.Log("component alindi " + info.Collider.transform.root.name);
-                    if (grabbedItem != null)
+                    detectedInfo.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
+                    Debug.Log("slot uygunluk: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
+                    if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder) && isAvailable)
                     {
-                        if (grabbedItem.IsPickedUp)
-                            continue;
+                        //display item ui
+                        OpenItemUI(grabbedItem, itemData.itemName);
 
-                        Debug.Log("item alindi");
-                        info.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
-                        Debug.Log("slot uygunluk: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
-                        if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder) && isAvailable)
+                        //Get the input from the network
+                        if (GetInput(out NetworkInputData networkInputData))
                         {
-                            isAvailable = false;
-                            grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
-                            return;
+                            if (networkInputData.isPickUpButtonPressed)
+                            {
+                                HandlePickup(grabbedItem);
+                                return;
+                            }
                         }
+
+                    }
+                    else if(!inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
+                    {
+                        //display item slot full
+                        OpenItemUI(grabbedItem, "Slot Full!");
+                        return;
                     }
                     else
-                        continue;
+                    {
+                        //when item null
+                        CloseItemUI();
+                    }
+                }
+                else
+                {
+                    //when item null
+                    CloseItemUI();
+                }
 
-                    Debug.Log("bos gecti");
+                Debug.Log("bos gecti");
+                
+            }
+            else
+            {
+                CloseItemUI();
+            }
+        }
+        private void CloseItemUI()
+        {
+            InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
+            foreach (InterractComponent item in allItems)
+            {
+                GameObject itemUI = item.GetItemUI();
+                if (itemUI != null)
+                {
+                    itemUI.SetActive(false);
                 }
             }
         }
+        private void OpenItemUI(InterractComponent grabbedItem, string message)
+        {
+            GameObject itemUI = grabbedItem.GetItemUI();
+            if(itemUI != null)
+            {
+                itemUI.SetActive(true);
+                itemUI.transform.LookAt(transform);
+                itemUI.transform.GetChild(0).gameObject.TryGetComponent<TextMeshProUGUI>(out TextMeshProUGUI itemNameText);
+                if(itemNameText != null)
+                {
+                    itemNameText.text = message;
+                }
+            }
+        }
+        private void HandlePickup(InterractComponent grabbedItem)
+        {
+            isAvailable = false;
+            grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
+        }
+        #endregion
 
+        #region CALLBACKS
         public void SendPickUpCallBack(int itemId, NetworkId networkId)
         {
             Debug.Log("pickup callback yollandi");
@@ -115,7 +185,7 @@ namespace Player.Interract
             inventoryManager.ItemDropped(itemId);
             isAvailable = true;
         }
-       
+        #endregion
 
     }
 }

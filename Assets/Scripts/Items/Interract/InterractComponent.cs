@@ -22,6 +22,7 @@ namespace Item.Interract
         [Header("Components")]
         [SerializeField] Rigidbody itemRigidbody;
         [SerializeField] BoxCollider boxCollider;
+        public GameObject itemUI;
 
         //Mutex Flags
         [Networked, HideInInspector] public NetworkBool isPickupComplete { get; set; }
@@ -41,15 +42,7 @@ namespace Item.Interract
         }
         public override void Spawned()
         {
-            if (Object.HasInputAuthority)
-            {
-                InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
-                foreach (InterractComponent item in allItems)
-                {
-                    item.OnRigChange();
-                    item.OnColChange();
-                }
-            }
+            
             isPickupComplete = true;
             isDropComplete = true;
         }
@@ -140,6 +133,11 @@ namespace Item.Interract
         {
             boxCollider.isTrigger = current;
             isTriggerCol = current;
+        }
+
+        public GameObject GetItemUI()
+        {
+            return itemUI;
         }
 
     }

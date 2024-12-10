@@ -183,6 +183,8 @@ namespace Player
 
         IEnumerator ServerReviveCO()
         {
+            playerDataMono.playerState = PlayerState.Died;
+            playerDataMono.playerStateStack.Add(playerDataMono.playerState);
             yield return new WaitForSeconds(2.0f);
 
             characterMovementHandler.RequestRespawn();
@@ -191,6 +193,8 @@ namespace Player
         public void OnRespawned()
         {
             //Reset variables
+            playerDataMono.playerStateStack.Remove(PlayerState.Died);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
             HP = startingHP;
             isDead = false;
             itemSwitch.SwitchSlot(itemSwitch.currentSlot);

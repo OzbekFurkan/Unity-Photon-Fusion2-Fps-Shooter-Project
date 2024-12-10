@@ -8,6 +8,7 @@ namespace Player
     public class CharacterInputHandler : MonoBehaviour
     {
         [SerializeField] private InputSettings inputSettings;
+        [SerializeField] private PlayerDataMono playerDataMono;
 
         //movement
         Vector2 moveInputVector = Vector2.zero;
@@ -25,8 +26,9 @@ namespace Player
         [HideInInspector] public bool isKnifeSlotButtonPressed;
         [HideInInspector] public bool isBombSlotButtonPressed;
         [HideInInspector] public bool isOtherSlotButtonPressed;
-        //UI
+        //PlayerUI
         [HideInInspector] public bool isLeaderboardButtonPressed;
+        [HideInInspector] public bool isPauseButtonPressed;
 
         //Other components
         LocalCameraHandler localCameraHandler;
@@ -46,7 +48,20 @@ namespace Player
         // Update is called once per frame
         void Update()
         {
-            if (!GetComponent<NetworkObject>().HasInputAuthority)
+            //can not set input when the game is paused by player or the player died
+            if (!GetComponent<NetworkObject>().HasInputAuthority && playerDataMono.playerState == PlayerState.Died)
+                return;
+
+            //PlayerUI
+            if (Input.GetKeyDown(inputSettings.leaderboardKey))
+                isLeaderboardButtonPressed = true;
+            else if (Input.GetKeyUp(inputSettings.leaderboardKey))
+                isLeaderboardButtonPressed = false;
+
+            if (Input.GetKeyDown(inputSettings.pauseKey))
+                isPauseButtonPressed = !isPauseButtonPressed;
+
+            if (playerDataMono.playerState == PlayerState.Paused)
                 return;
 
             //View input
@@ -71,11 +86,15 @@ namespace Player
                 isFireButtonPressed = true;
 
             //interract
-            if (Input.GetKeyDown(inputSettings.dropkey))
-                isDropButtonPressed = true;
+            //can not intract while reloading or already interacting
+            if(playerDataMono.playerState == PlayerState.Playing)
+            {
+                if (Input.GetKeyDown(inputSettings.dropkey))
+                    isDropButtonPressed = true;
 
-            if (Input.GetKeyDown(inputSettings.pickupKey))
-                isPickUpButtonPressed = true;
+                if (Input.GetKeyDown(inputSettings.pickupKey))
+                    isPickUpButtonPressed = true;
+            }
 
             //item slot switch
             if (Input.GetKeyDown(inputSettings.riffleSlotKey))
@@ -88,12 +107,6 @@ namespace Player
                 isBombSlotButtonPressed = true;
             if (Input.GetKeyDown(inputSettings.otherSlotKey))
                 isOtherSlotButtonPressed = true;
-
-            //UI
-            if (Input.GetKeyDown(inputSettings.leaderboardKey))
-                isLeaderboardButtonPressed = true;
-            else if (Input.GetKeyUp(inputSettings.leaderboardKey))
-                isLeaderboardButtonPressed = false;
 
             
 
@@ -127,8 +140,9 @@ namespace Player
             networkInputData.isBombSlotButtonPressed = isBombSlotButtonPressed;
             networkInputData.isOtherSlotButtonPressed = isOtherSlotButtonPressed;
 
-            //UI
+            //playerUI
             networkInputData.isLeaderboardButtonPressed = isLeaderboardButtonPressed;
+            networkInputData.isPauseButtonPressed = isPauseButtonPressed;
 
             //Reset variables now that we have read their states
             isJumpButtonPressed = false;

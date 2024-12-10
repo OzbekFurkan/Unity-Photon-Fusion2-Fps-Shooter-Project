@@ -46,10 +46,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc50f4ea7575d4c18bc1d392cdf4606e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  networkRunnerPrefab: {fileID: 1337944121344549671, guid: d2c47d4951b3a4dbaa6cebb1b4bedea5, type: 3}
   usernamePanel: {fileID: 0}
   createRoomPanel: {fileID: 0}
   joinRoomPanel: {fileID: 0}
   settingsPanel: {fileID: 0}
+  statusPanel: {fileID: 0}
   usernameInput: {fileID: 0}
 --- !u!114 &8109957822988079196
 MonoBehaviour:

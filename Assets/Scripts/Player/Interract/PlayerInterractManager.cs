@@ -20,9 +20,7 @@ namespace Player.Interract
         [SerializeField] private InventoryManager inventoryManager;
         [SerializeField] private GameObject weaponHolder;
         [SerializeField] private ItemSwitch itemSwitch;
-
-        //mutex
-        [Networked] bool isAvailable { get; set; }
+        [SerializeField] private PlayerDataMono playerDataMono;
 
         #region NETWORK_SYNC
         public override void Spawned()
@@ -36,7 +34,6 @@ namespace Player.Interract
                     item.OnColChange();
                 }
             }
-            isAvailable = true;
         }
         #endregion
 
@@ -66,9 +63,10 @@ namespace Player.Interract
             foreach (GameObject item in inventoryManager.GetAllItemObjects())
             {
                 InterractComponent interractComponent = item.GetComponent<InterractComponent>();
-                if (interractComponent.isItemActive && isAvailable)
+                if (interractComponent.isItemActive)
                 {
-                    isAvailable = false;
+                    playerDataMono.playerState = PlayerState.Interacting;
+                    playerDataMono.playerStateStack.Add(playerDataMono.playerState);
                     interractComponent.DropItemRpc();
                     return;
                 }
@@ -97,7 +95,7 @@ namespace Player.Interract
 
                     detectedInfo.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
                     Debug.Log("slot uygunluk: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
-                    if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder) && isAvailable)
+                    if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
                     {
                         //display item ui
                         OpenItemUI(grabbedItem, itemData.itemName);
@@ -167,23 +165,27 @@ namespace Player.Interract
         }
         private void HandlePickup(InterractComponent grabbedItem)
         {
-            isAvailable = false;
+            playerDataMono.playerState = PlayerState.Interacting;
+            playerDataMono.playerStateStack.Add(playerDataMono.playerState);
             grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
         }
         #endregion
 
         #region CALLBACKS
-        public void SendPickUpCallBack(int itemId, NetworkId networkId)
+        [Rpc(sources:RpcSources.StateAuthority, targets: RpcTargets.InputAuthority|RpcTargets.StateAuthority)]
+        public void SendPickUpCallBackRpc(int itemId, NetworkId networkId)
         {
             Debug.Log("pickup callback yollandi");
             inventoryManager.ItemPicked(itemId, networkId);
-            isAvailable = true;
+            playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
         }
-
-        public void SendDropCallBack(int itemId)
+        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority | RpcTargets.StateAuthority)]
+        public void SendDropCallBackRpc(int itemId)
         {
             inventoryManager.ItemDropped(itemId);
-            isAvailable = true;
+            playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
         }
         #endregion
 

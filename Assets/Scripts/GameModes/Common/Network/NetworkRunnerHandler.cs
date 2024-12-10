@@ -9,11 +9,13 @@ using System;
 using System.Linq;
 using Player;
 using Menu;
+using GameModes.Modes;
 
 namespace GameModes.Common
 {
     public class NetworkRunnerHandler : MonoBehaviour, INetworkRunnerCallbacks
     {
+
         NetworkRunner networkRunner;
 
         //player component to listen player's input events
@@ -23,6 +25,8 @@ namespace GameModes.Common
 
         MenuLifeCycleHandler menuLifeCycleHandler;
 
+        BaseGameMode baseGameMode;
+
         #region USED_NETWORK_RUNNER_CALLBACKS
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
         {
@@ -31,9 +35,12 @@ namespace GameModes.Common
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
             if (characterInputHandler == null && Player.NetworkPlayer.Local != null)
+            {
                 characterInputHandler = Player.NetworkPlayer.Local.GetComponent<CharacterInputHandler>();
+                baseGameMode = FindObjectOfType<BaseGameMode>();
+            }  
 
-            if (characterInputHandler != null)
+            if (characterInputHandler != null && baseGameMode != null && baseGameMode.gameState == GameState.Playing)
                 input.Set(characterInputHandler.GetNetworkInput());
 
         }
@@ -52,6 +59,17 @@ namespace GameModes.Common
                 }
             }
 
+        }
+        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason)
+        {
+            Debug.Log("OnShutdown");
+            SceneManager.LoadScene("MainMenu");
+        }
+        public void OnDisconnectedFromServer(NetworkRunner runner)
+        {
+            Debug.Log("OnDisconnectedFromServer");
+            // Shuts down the local NetworkRunner when the client is disconnected from the server.
+            GetComponent<NetworkRunner>().Shutdown();
         }
         #endregion
 
@@ -107,10 +125,9 @@ namespace GameModes.Common
                 PlayerCount = maxPlayers
             });
             ToggleStatusPanel();
-            if(runner.IsServer)
+            if (runner.IsServer)
             {
                 await runner.LoadScene(sceneName);
-                
             }
             
         }
@@ -138,6 +155,7 @@ namespace GameModes.Common
             if(!result.Ok)
             {
                 Debug.Log("Failed while joining lobby");
+                //failed to connect panel needed here!
             }
             else
             {
@@ -167,8 +185,6 @@ namespace GameModes.Common
         public void OnConnectedToServer(NetworkRunner runner) { Debug.Log("OnConnectedToServer"); }
         public void OnPlayerLeft(NetworkRunner runner, PlayerRef player) { }
         public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
-        public void OnShutdown(NetworkRunner runner, ShutdownReason shutdownReason) { Debug.Log("OnShutdown"); }
-        public void OnDisconnectedFromServer(NetworkRunner runner) { Debug.Log("OnDisconnectedFromServer"); }
         public void OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { Debug.Log("OnConnectRequest"); }
         public void OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { Debug.Log("OnConnectFailed"); }
         public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }

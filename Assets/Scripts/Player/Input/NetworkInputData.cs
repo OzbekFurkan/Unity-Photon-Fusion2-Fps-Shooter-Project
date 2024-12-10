@@ -22,8 +22,8 @@ namespace Player
         public NetworkBool isKnifeSlotButtonPressed;
         public NetworkBool isBombSlotButtonPressed;
         public NetworkBool isOtherSlotButtonPressed;
-        //UI
+        //PlayerUI
         public NetworkBool isLeaderboardButtonPressed;
-
+        public NetworkBool isPauseButtonPressed;
     }
 }

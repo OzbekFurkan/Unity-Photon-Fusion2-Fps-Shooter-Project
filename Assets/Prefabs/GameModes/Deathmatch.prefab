@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 4760288496052297082}
   - component: {fileID: 1501355771507552896}
   - component: {fileID: 2273052606914520907}
-  - component: {fileID: 4439609816303777818}
+  - component: {fileID: 7671259914277370874}
   m_Layer: 0
   m_Name: Deathmatch
   m_TagString: Untagged
@@ -54,7 +54,7 @@ MonoBehaviour:
   NetworkedBehaviours:
   - {fileID: 1501355771507552896}
   - {fileID: 2273052606914520907}
-  - {fileID: 4439609816303777818}
+  - {fileID: 7671259914277370874}
 --- !u!114 &1501355771507552896
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -69,10 +69,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   teamScoreTextA: {fileID: 0}
   teamScoreTextB: {fileID: 0}
-  _teamScoreA: 0
-  _teamScoreB: 0
-  timerManager: {fileID: 4439609816303777818}
+  _teamScoreSoldier: 0
+  _teamScoreAlien: 0
+  startTime: 60
+  timerText: {fileID: 0}
   GameOverUI: {fileID: 0}
+  winnerText: {fileID: 0}
+  winnerTeamIcon: {fileID: 0}
+  soldierTeamIcon: {fileID: 21300000, guid: 92c0b4962d0664542ad45b269628ad07, type: 3}
+  alienTeamIcon: {fileID: 21300000, guid: 28550497595af4f3e95ae306f6ceb32f, type: 3}
+  drawIcon: {fileID: 21300000, guid: 4e130a47c6e2a4fd3aad52e2afbbe122, type: 3}
+  countdownForMenuText: {fileID: 0}
 --- !u!114 &2273052606914520907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -88,7 +95,7 @@ MonoBehaviour:
   killTable: {fileID: 0}
   _rowIndex: 0
   rowAmount: 4
---- !u!114 &4439609816303777818
+--- !u!114 &7671259914277370874
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -97,11 +104,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 3051449474952116712}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8da5c324521034c829f28b4344c1b49b, type: 3}
+  m_Script: {fileID: 11500000, guid: 2375471e226b04af0929e347bd948482, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  timerText: {fileID: 0}
-  startTime: 120
-  _currentTime: 0
-  "_isT\u0130meUp":
-    _value: 0
+  SoldierPlayerPrefab: {fileID: 8439091692384082190, guid: 913e1b08620d21841b5a2c4a29553dd7, type: 3}
+  AlienPlayerPrefab: {fileID: 8439091692384082190, guid: bac46f4933c374c8290788fa2fc6ce02, type: 3}

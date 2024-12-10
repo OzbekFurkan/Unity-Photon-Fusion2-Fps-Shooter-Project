@@ -4,11 +4,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using GameModes.Common;
+using Fusion;
 
 namespace Menu
 {
     public class MenuLifeCycleHandler : MonoBehaviour
     {
+        [Header("Network Runner Prefab")]
+        public GameObject networkRunnerPrefab;
+
         [Header("UI Panels")]
         public GameObject usernamePanel;
         public GameObject createRoomPanel;
@@ -22,7 +26,19 @@ namespace Menu
         // Start is called before the first frame update
         void Start()
         {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
             InitializePanels();
+            InitializeNetworkRunnerPrefab();
+        }
+
+        private void InitializeNetworkRunnerPrefab()
+        {
+            NetworkRunner _runnerInstance = FindObjectOfType<NetworkRunner>();
+            if (_runnerInstance == null)
+            {
+                Instantiate(networkRunnerPrefab);
+            }
         }
 
         private void DisableAllPanels()

@@ -31,6 +31,16 @@ namespace Player.UI
         [Header("Leaderboard UI")]
         public Transform leaderboard;
         public GameObject leaderboardRaw;
+        bool isLeaderBoardbuttonPressed = false;//To prevent multiple times diplay leaderboard table method call
+
+        [Header("PauseMenu")]
+        [SerializeField] private GameObject pauseMenuPanel;
+        public Button resumeButton;
+
+        public void Start()
+        {
+            resumeButton.onClick.AddListener(() => ResumeButtonClicked());
+        }
 
         public override void Spawned()
         {
@@ -49,7 +59,7 @@ namespace Player.UI
             SetHpBarSlider();
             SetSlotUI();
 
-            //InputGameUI
+            //InputPlayerUI
             HandleInput();
                
         }
@@ -137,28 +147,43 @@ namespace Player.UI
         }
         #endregion
 
-        #region LEADERBOARD
+        #region PlayerInputUI
         private void HandleInput()
         {
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {
-                if (networkInputData.isLeaderboardButtonPressed)
+                if (networkInputData.isLeaderboardButtonPressed && !isLeaderBoardbuttonPressed)
                 {
+                    isLeaderBoardbuttonPressed = true;
                     leaderboard.gameObject.SetActive(true);
                     InstantiateAllLeaderboardRaws();
                 }
                 else if (!networkInputData.isLeaderboardButtonPressed)
                 {
                     leaderboard.gameObject.SetActive(false);
+                    isLeaderBoardbuttonPressed = false;
                 }
-
+                if(networkInputData.isPauseButtonPressed)
+                {
+                    pauseMenuPanel.SetActive(true);
+                    playerDataMono.playerState = PlayerState.Paused;
+                    playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+                }
+                else
+                {
+                    pauseMenuPanel.SetActive(false);
+                    playerDataMono.playerStateStack.Remove(PlayerState.Paused);
+                    playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+                }
             }
-        }    
+            
+        }
+        #endregion
 
+        #region LEADERBOARD
         public void InstantiateAllLeaderboardRaws()
         {
-
             DestroyLeaderboardItems();
             foreach (PlayerDataStruct playerData in GetAllPlayersDatas())
             {
@@ -192,6 +217,24 @@ namespace Player.UI
             }
 
             return playerDatas;
+        }
+        #endregion
+
+        #region PAUSED_PANEL
+        public void ResumeButtonClicked()
+        {
+            Debug.Log("resume clicked");
+            pauseMenuPanel.SetActive(false);
+            playerDataMono.playerStateStack.Remove(PlayerState.Paused);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+        }
+        public void SettingsButtonClicked()
+        {
+
+        }
+        public void QuitButtonClicked()
+        {
+            Runner.Shutdown();
         }
         #endregion
 

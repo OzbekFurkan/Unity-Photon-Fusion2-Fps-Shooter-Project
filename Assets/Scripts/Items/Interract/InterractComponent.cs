@@ -77,7 +77,7 @@ namespace Item.Interract
             Debug.Log("pickup callback yolancak");
             PlayerInterractManager PIM = parentPlayerObject.GetComponent<PlayerInterractManager>();
             ItemDataMono itemDataMono = GetComponent<ItemDataMono>();
-            PIM.SendPickUpCallBack(itemDataMono.itemId, Object.Id);
+            PIM.SendPickUpCallBackRpc(itemDataMono.itemId, Object.Id);
         }
 
         private void SetWeaponTransformData(GameObject parent)
@@ -125,7 +125,7 @@ namespace Item.Interract
         {
             PlayerInterractManager PIM = parentPlayerObject.GetComponent<PlayerInterractManager>();
             ItemDataMono itemDataMono = GetComponent<ItemDataMono>();
-            PIM.SendDropCallBack(itemDataMono.itemId);
+            PIM.SendDropCallBackRpc(itemDataMono.itemId);
         }
         #endregion
 

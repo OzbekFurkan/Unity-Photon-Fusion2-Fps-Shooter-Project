@@ -22,8 +22,9 @@ namespace Player
         public KeyCode knifeSlotKey;
         public KeyCode bombSlotKey;
         public KeyCode otherSlotKey;
-        [Header("UI")]
+        [Header("PlayerUI")]
         public KeyCode leaderboardKey;
+        public KeyCode pauseKey;
 
     }
 }

@@ -1,25 +1,28 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Fusion;
 using TMPro;
-using Player;
-using Item;
+using GameModes.Common;
+using Fusion;
 using UnityEngine.UI;
+using Item;
 
 namespace Player.UI
 {
-    public class PlayerUIManager : NetworkBehaviour
+    public class PlayerUIController : MonoBehaviour
     {
-        [Header("PlayerData")]
-        [SerializeField] PlayerDataMono playerDataMono;
-        [SerializeField] GameObject playerUi;
-        [SerializeField] ItemSwitch itemSwitch;
-        [SerializeField] HPHandler hPHandler;
-        [SerializeField] Transform weaponHolder;
+        
+        [Header("References")]
+        [SerializeField] SpawnHandler spawnHandler;
+        [SerializeField] CanvasGroup playerUI;
+        PlayerDataMono playerDataMono;
+        ItemSwitch itemSwitch;
+        HPHandler hpHandler;
+        Transform weaponHolder;
+        CharacterInputHandler characterInputHandler;
 
         [Header("Weapon Data UI")]
-        [SerializeField] TextMeshProUGUI ammoText; 
+        [SerializeField] TextMeshProUGUI ammoText;
 
         [Header("Hp Data UI")]
         [SerializeField] Slider hpBarSlider;
@@ -31,37 +34,40 @@ namespace Player.UI
         [Header("Leaderboard UI")]
         public Transform leaderboard;
         public GameObject leaderboardRaw;
-        bool isLeaderBoardbuttonPressed = false;//To prevent multiple times diplay leaderboard table method call
+        bool isLeaderBoardbuttonPressed = false;//To prevent calling leaderboard diplay method multiple times
 
         [Header("PauseMenu")]
         [SerializeField] private GameObject pauseMenuPanel;
-        public Button resumeButton;
 
-        public void Start()
+        public void Update()
         {
-            resumeButton.onClick.AddListener(() => ResumeButtonClicked());
-        }
-
-        public override void Spawned()
-        {
-            if (!Object.HasInputAuthority)
-                playerUi.SetActive(false);
-        }
-
-        // Update is called once per frame
-        public override void FixedUpdateNetwork()
-        {
-            if (!Object.HasInputAuthority)
+            if (spawnHandler.LocalPlayer == null)
+            {
+                playerUI.alpha = 0;
                 return;
+            }
+            playerUI.alpha = 1;
+            InitializeReferences();
 
-            //playerUI
             SetAmmoText();
             SetHpBarSlider();
             SetSlotUI();
 
-            //InputPlayerUI
             HandleInput();
-               
+
+        }
+
+        private void InitializeReferences()
+        {
+            spawnHandler.LocalPlayer.TryGetComponent<PlayerReferenceGetter>(out PlayerReferenceGetter playerReferenceGetter);
+            if(playerReferenceGetter != null)
+            {
+                playerDataMono = playerReferenceGetter.GetPlayerDataMono();
+                itemSwitch = playerReferenceGetter.GetItemSwitch();
+                hpHandler = playerReferenceGetter.GetHPHandler();
+                weaponHolder = playerReferenceGetter.GetWeaponHolder();
+                characterInputHandler = playerReferenceGetter.GetCharacterInputHandler();
+            }
         }
 
         #region AMMO
@@ -73,17 +79,23 @@ namespace Player.UI
 
                 if (weaponData != null && weaponData.isActiveAndEnabled && weaponData.Object != null)
                 {
+                    if (playerDataMono.playerState == PlayerState.Reloading)
+                    {
+                        ammoText.text = "Reloading...";
+                        return;
+                    }
                     int ammoData = weaponData.ammo;
-                    ammoText.text = ammoData + "";
+                    int fullAmmoData = weaponData.fullAmmo;
+                    ammoText.text = ammoData + "/" + fullAmmoData;
                 }
                 else
                 {
-                    ammoText.text = "0";
+                    ammoText.text = "";
                 }
             }
             else
             {
-                ammoText.text = "0";
+                ammoText.text = "";
             }
         }
         #endregion
@@ -91,7 +103,7 @@ namespace Player.UI
         #region HP
         private void SetHpBarSlider()
         {
-            hpBarSlider.value = hPHandler.HP;
+            hpBarSlider.value = hpHandler.HP;
         }
         #endregion
 
@@ -117,10 +129,10 @@ namespace Player.UI
                 {
                     GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
                     item.TryGetComponent<ItemDataMono>(out ItemDataMono itemData);
-                    if(itemData != null)
+                    if (itemData != null)
                     {
                         slotUI.transform.GetChild(i).gameObject.TryGetComponent<Image>(out Image image);
-                        if(image != null)
+                        if (image != null)
                         {
                             image.sprite = itemData.itemIcon;
                             //dark-gray overlay by default
@@ -133,7 +145,7 @@ namespace Player.UI
 
             //Set Current Slot Overlay White
             slotUI.transform.GetChild(itemSwitch.currentSlot).gameObject.TryGetComponent<Image>(out Image currentSlotImage);
-            if(currentSlotImage != null)
+            if (currentSlotImage != null)
             {
                 currentSlotImage.color = SetOverlayOnSlotIcons("#FFFFF");
             }
@@ -150,34 +162,34 @@ namespace Player.UI
         #region PlayerInputUI
         private void HandleInput()
         {
-            //Get the input from the network
-            if (GetInput(out NetworkInputData networkInputData))
+            if (characterInputHandler.isLeaderboardButtonPressed && !isLeaderBoardbuttonPressed)
             {
-                if (networkInputData.isLeaderboardButtonPressed && !isLeaderBoardbuttonPressed)
-                {
-                    isLeaderBoardbuttonPressed = true;
-                    leaderboard.gameObject.SetActive(true);
-                    InstantiateAllLeaderboardRaws();
-                }
-                else if (!networkInputData.isLeaderboardButtonPressed)
-                {
-                    leaderboard.gameObject.SetActive(false);
-                    isLeaderBoardbuttonPressed = false;
-                }
-                if(networkInputData.isPauseButtonPressed)
-                {
-                    pauseMenuPanel.SetActive(true);
-                    playerDataMono.playerState = PlayerState.Paused;
-                    playerDataMono.playerStateStack.Add(playerDataMono.playerState);
-                }
-                else
-                {
-                    pauseMenuPanel.SetActive(false);
-                    playerDataMono.playerStateStack.Remove(PlayerState.Paused);
-                    playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
-                }
+                isLeaderBoardbuttonPressed = true;
+                leaderboard.gameObject.SetActive(true);
+                InstantiateAllLeaderboardRaws();
             }
-            
+            else if (!characterInputHandler.isLeaderboardButtonPressed)
+            {
+                leaderboard.gameObject.SetActive(false);
+                isLeaderBoardbuttonPressed = false;
+            }
+            if (characterInputHandler.isPauseButtonPressed)
+            {
+                pauseMenuPanel.SetActive(true);
+                playerDataMono.playerState = PlayerState.Paused;
+                playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
+            else
+            {
+                pauseMenuPanel.SetActive(false);
+                playerDataMono.playerStateStack.Remove(PlayerState.Paused);
+                playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
+
         }
         #endregion
 
@@ -224,9 +236,8 @@ namespace Player.UI
         public void ResumeButtonClicked()
         {
             Debug.Log("resume clicked");
-            pauseMenuPanel.SetActive(false);
-            playerDataMono.playerStateStack.Remove(PlayerState.Paused);
-            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+            if (characterInputHandler != null)
+                characterInputHandler.isPauseButtonPressed = !characterInputHandler.isPauseButtonPressed;
         }
         public void SettingsButtonClicked()
         {
@@ -234,10 +245,9 @@ namespace Player.UI
         }
         public void QuitButtonClicked()
         {
-            Runner.Shutdown();
+            FindObjectOfType<NetworkRunner>().Shutdown();
         }
         #endregion
 
     }
 }
-

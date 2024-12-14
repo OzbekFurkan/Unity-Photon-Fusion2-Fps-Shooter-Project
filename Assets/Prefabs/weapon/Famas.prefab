@@ -271,6 +271,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _isFiring: 0
+  interractComponent: {fileID: 7519246207031696649}
   weaponDataMono: {fileID: 2831380193057120408}
   aimPoint: {fileID: 8120879305032731904}
   fireParticleSystem: {fileID: 6063826860280628520}
@@ -294,7 +295,7 @@ MonoBehaviour:
   weaponDataSettings: {fileID: 11400000, guid: e11f1d16b03474367acf1e36152d91e0, type: 2}
   weaponShootSettings: {fileID: 0}
   _ammo: 0
-  fullAmmo: 0
+  _fullAmmo: 0
   leftHandTransform: {fileID: 3543117757698836994}
   rightHandTransform: {fileID: 8941776467612273011}
 --- !u!114 &7519246207031696649

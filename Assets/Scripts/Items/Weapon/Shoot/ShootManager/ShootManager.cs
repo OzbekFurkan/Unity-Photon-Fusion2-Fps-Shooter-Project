@@ -9,10 +9,12 @@ namespace Item
 {
     public class ShootManager : NetworkBehaviour
     {
-        [Header("Network Properties")]
-        ChangeDetector changeDetector;
-        [Networked]
+        //Network Properties
+        [Networked, OnChangedRender(nameof(OnFireChanged))]
         public bool isFiring { get; set; }
+
+        [Header("References")]
+        [SerializeField] InterractComponent interractComponent;
 
         [Header("Fire Datas")]
         [SerializeField] private WeaponDataMono weaponDataMono;
@@ -30,27 +32,13 @@ namespace Item
 
         public override void Spawned()
         {
-            changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
+            
         }
 
         #region SYNC_FIRE
-        public override void Render()
+        public void OnFireChanged()
         {
-            foreach (var change in changeDetector.DetectChanges(this, out var prev, out var current))
-            {
-                switch (change)
-                {
-                    case nameof(isFiring):
-                        var fireReader = GetPropertyReader<bool>(nameof(isFiring));
-                        var (isFiringOld, isFiringCurrent) = fireReader.Read(prev, current);
-                        OnFireChanged(isFiringOld, isFiringCurrent);
-                        break;
-                }
-            }
-        }
-        public void OnFireChanged(bool isFiringOld, bool isFiringCurrent)
-        {
-            if (isFiringCurrent && !isFiringOld)
+            if (isFiring)
                 OnFireRemote();
 
         }
@@ -68,7 +56,17 @@ namespace Item
             if (Time.time - lastTimeFired < 0.15f)
                 return;
 
+            interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
+            if (weaponDataMono.ammo <= 0 && playerData != null)
+            {
+                if(playerData.playerState != PlayerState.Reloading && weaponDataMono.fullAmmo > 0)
+                    StartCoroutine(Reload());
+
+                return;
+            }
+
             StartCoroutine(FireEffectCO());
+                
 
             //recoil aplied
             if(Object.HasInputAuthority)
@@ -104,10 +102,45 @@ namespace Item
             isFiring = true;
             weaponDataMono.ammo--;
             fireParticleSystem.Play();
-
             yield return new WaitForSeconds(0.09f);
-
             isFiring = false;
+        }
+        #endregion
+
+        #region RELOAD
+        private IEnumerator Reload()
+        {
+            PlayerDataMono playerDataMono = null;
+
+            //assign player data
+            interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
+            if(playerData != null)
+                playerDataMono = playerData;
+
+            //set player state
+            if (playerDataMono != null)
+            {
+                playerDataMono.playerState = PlayerState.Reloading;
+                playerDataMono.playerStateStack.Add(PlayerState.Reloading);
+            }
+
+            //wait 2 seconds for reloading...
+            yield return new WaitForSeconds(2f);
+
+            //set ammo values
+            weaponDataMono.ammo = weaponDataMono.fullAmmo <= weaponDataMono.weaponDataSettings.ammo ?
+                weaponDataMono.fullAmmo : weaponDataMono.weaponDataSettings.ammo;
+
+            weaponDataMono.fullAmmo = weaponDataMono.fullAmmo <= weaponDataMono.ammo ?
+                0 : weaponDataMono.fullAmmo - weaponDataMono.ammo;
+
+            //set player state to previous
+            if (playerDataMono != null)
+            {
+                playerDataMono.playerStateStack.Remove(PlayerState.Reloading);
+                playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+            }
+
         }
         #endregion
 

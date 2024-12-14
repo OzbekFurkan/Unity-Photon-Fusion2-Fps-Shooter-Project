@@ -6,8 +6,6 @@ using Fusion;
 
 namespace Item
 {
-    //it is not used yet but might be in future
-    public enum ItemState { Available, Interracting, Shooting, Reloading}
     public abstract class ItemDataMono : NetworkBehaviour
     {
         //must be assigned in derived classes

@@ -14,11 +14,9 @@ namespace Item
         [SerializeField] public WeaponDataSettings weaponDataSettings;
         [HideInInspector] public WeaponShootSettings weaponShootSettings;
 
-        [Header("Network")]
-        private ChangeDetector changeDetector;
-        [Networked]
-        [HideInInspector] public int ammo { get; set; }
-        [HideInInspector] public int fullAmmo;
+        //Network
+        [Networked, HideInInspector] public int ammo { get; set; }
+        [Networked, HideInInspector] public int fullAmmo { get; set; }
 
         [Header("Hand Attach")]
         public Transform leftHandTransform;
@@ -26,7 +24,6 @@ namespace Item
 
         public override void Spawned()
         {
-            changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
 
             SetBaseProps(weaponDataSettings.itemName,
                 (int)weaponDataSettings.itemId,
@@ -37,26 +34,6 @@ namespace Item
             ammo = weaponDataSettings.ammo;
             fullAmmo = weaponDataSettings.fullAmmo;
             weaponShootSettings = weaponDataSettings.weaponShootSettings;
-        }
-
-        public override void Render()
-        {
-            foreach (var change in changeDetector.DetectChanges(this, out var previous, out var current))
-            {
-                switch (change)
-                {
-                    case nameof(ammo):
-                        var reader = GetPropertyReader<int>(nameof(ammo));
-                        int receivedAmmo = reader.Read(current);
-                        OnAmmoChanged(receivedAmmo);
-                        break;
-                }
-            }
-        }
-
-        public void OnAmmoChanged(int newAmmo)
-        {
-            ammo = newAmmo;
         }
 
         protected override void SetBaseProps(string itemName, int itemId, GameObject itemPrefab, Sprite itemIcon, int itemSlot)

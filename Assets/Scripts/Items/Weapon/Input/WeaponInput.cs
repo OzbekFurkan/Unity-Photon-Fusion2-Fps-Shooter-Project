@@ -16,7 +16,6 @@ namespace Item
         }
         public override void FixedUpdateNetwork()
         {
-
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {

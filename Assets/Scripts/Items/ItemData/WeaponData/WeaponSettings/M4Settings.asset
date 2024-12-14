@@ -19,4 +19,5 @@ MonoBehaviour:
   itemIcon: {fileID: 21300000, guid: 29cf96e3d82af4396a4a2a652301dabf, type: 3}
   ammo: 30
   fullAmmo: 100
+  reloadAnimation: {fileID: 7400000, guid: 7d7592615eec14cffbe74dc82b96f248, type: 2}
   weaponShootSettings: {fileID: 11400000, guid: 9f915a37a5e6c45a3b4c353cb57d61db, type: 2}

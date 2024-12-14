@@ -14,11 +14,26 @@ namespace GameModes.Common
         public Player.NetworkPlayer SoldierPlayerPrefab;
         public Player.NetworkPlayer AlienPlayerPrefab;
 
+        [Header("Spawn Points")]
+        public Transform soldierSpawnPointContainer;
+        public Transform alienSpawnPointContainer;
+
+        [HideInInspector] public Player.NetworkPlayer LocalPlayer { get; private set; }
         [Networked] private int selectedTeam { get; set; }
 
         public override void Spawned()
         {
             selectedTeam = 0;
+        }
+
+        public override void Render()
+        {
+            // Prepare LocalPlayer property that can be accessed from UI
+            if (LocalPlayer == null || LocalPlayer.Object == null || LocalPlayer.Object.IsValid == false)
+            {
+                var playerObject = Runner.GetPlayerObject(Runner.LocalPlayer);
+                LocalPlayer = playerObject != null ? playerObject.GetComponent<Player.NetworkPlayer>() : null;
+            }
         }
 
         public void PlayerJoined(PlayerRef player)
@@ -30,13 +45,13 @@ namespace GameModes.Common
                 Player.NetworkPlayer spawnedPlayer;
                 if (selectedTeam == (int)Team.Soldier)
                 {
-                    spawnedPlayer = runner.Spawn(SoldierPlayerPrefab, Utils.GetRandomSpawnPoint(), Quaternion.identity, player);
+                    spawnedPlayer = runner.Spawn(SoldierPlayerPrefab, GetSpawnPoint(), Quaternion.identity, player);
                     selectedTeam = (int)Team.Alien;
                     runner.SetPlayerObject(player, spawnedPlayer.Object);
                 }
                 else
                 {
-                    spawnedPlayer = runner.Spawn(AlienPlayerPrefab, Utils.GetRandomSpawnPoint(), Quaternion.identity, player);
+                    spawnedPlayer = runner.Spawn(AlienPlayerPrefab, GetSpawnPoint(), Quaternion.identity, player);
                     selectedTeam = (int)Team.Soldier;
                     runner.SetPlayerObject(player, spawnedPlayer.Object);
                 } 
@@ -47,6 +62,20 @@ namespace GameModes.Common
 
             }
             else Debug.Log("OnPlayerJoined");
+        }
+
+        private Vector3 GetSpawnPoint()
+        {
+            if(selectedTeam == (int)Team.Soldier)
+            {
+                int i = Random.Range(0, soldierSpawnPointContainer.childCount);
+                return soldierSpawnPointContainer.GetChild(i).position;
+            }
+            else
+            {
+                int i = Random.Range(0, alienSpawnPointContainer.childCount);
+                return soldierSpawnPointContainer.GetChild(i).position;
+            }
         }
 
         public void PlayerLeft(PlayerRef player)

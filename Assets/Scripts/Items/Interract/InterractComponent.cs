@@ -6,6 +6,7 @@ using UnityEngine;
 using Fusion;
 using Player;
 using Player.Interract;
+using Player.UI;
 
 namespace Item.Interract
 {
@@ -83,10 +84,14 @@ namespace Item.Interract
         private void SetWeaponTransformData(GameObject parent)
         {
             ItemDataMono itemDataMono = GetComponent<ItemDataMono>();
-            Transform WeaponHolder = parent.transform.GetChild(1).GetChild(0).GetChild(1);
-            Debug.Log(parent.transform.GetChild(1).GetChild(0).GetChild(1).GetChild(itemDataMono.itemSlot).gameObject.name);
+            parent.TryGetComponent<PlayerReferenceGetter>(out PlayerReferenceGetter playerReferenceGetter);
+            if (playerReferenceGetter == null)
+                return;
+
+            Transform weaponHolder = playerReferenceGetter.GetWeaponHolder();
+
             parent.GetComponent<ItemSwitch>().SwitchSlot(itemDataMono.itemSlot);//change slot to which possessed item's slot is
-            transform.SetParent(WeaponHolder.GetChild(itemDataMono.itemSlot));
+            transform.SetParent(weaponHolder.GetChild(itemDataMono.itemSlot));
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(Vector3.zero);
         }

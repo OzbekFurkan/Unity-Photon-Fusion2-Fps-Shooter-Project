@@ -17,8 +17,10 @@ MonoBehaviour:
     m_Bits: 119
   hitDistance: 100
   hitDamage: 25
+  impactEffectPrefab: {fileID: 8841237168206491380, guid: 5faf352c16546461a9a4188c9a42cc4f, type: 3}
   isAuto: 1
   recoilPattern: {fileID: 11400000, guid: 43ef02ccfb3694820a7cf3a97ade8d12, type: 2}
   recoilIntensity: 1
-  recoilTolerance: 0.1
+  raycastRecoilIntensity: 0.1
+  recoilTolerance: 1
   recoilSpeed: 0.6

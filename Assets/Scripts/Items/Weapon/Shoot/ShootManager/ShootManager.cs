@@ -4,6 +4,7 @@ using UnityEngine;
 using Fusion;
 using Player;
 using Item.Interract;
+using Player.UI;
 
 namespace Item
 {
@@ -19,13 +20,17 @@ namespace Item
         [Header("Fire Datas")]
         [SerializeField] private WeaponDataMono weaponDataMono;
         public Transform aimPoint;
+        private Vector3 playercameraHitpoint;
+        Transform playerCamera;
+        float hitPointDistance;
         float lastTimeFired = 0;
 
         [Header("Recoil Follow")]
-        private int currentRecoilIndex = 1;
+        private int currentRecoilIndex = 0;
         private Vector2 currentRecoil;
-        private Transform cameraTransform;
         private bool isRecoiling = false;
+        private float recoilTolerance;
+        private float distanceRefactor;
 
         [Header("Effects")]
         public ParticleSystem fireParticleSystem;
@@ -56,6 +61,11 @@ namespace Item
             if (Time.time - lastTimeFired < 0.15f)
                 return;
 
+            //owner null check
+            if (playercameraHitpoint == null)
+                return;
+
+            //reload check
             interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
             if (weaponDataMono.ammo <= 0 && playerData != null)
             {
@@ -65,18 +75,17 @@ namespace Item
                 return;
             }
 
+            //visual fire and ammo decrement
             StartCoroutine(FireEffectCO());
-                
-
-            //recoil aplied
-            if(Object.HasInputAuthority)
-                ApplyRecoil();
 
             float hitDistance = weaponDataMono.weaponShootSettings.hitDistance;
 
-            Runner.LagCompensation.Raycast(aimPoint.position, aimForwardVector, hitDistance, Object.InputAuthority,
-                out var hitinfo, weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
+            Vector3 recoilOffset = (playerCamera.right * currentRecoil.x - playerCamera.up * currentRecoil.y);
 
+            Vector3 shootvector = ((playercameraHitpoint + recoilOffset*weaponDataMono.weaponShootSettings.raycastRecoilIntensity) - aimPoint.position).normalized;
+
+            Runner.LagCompensation.Raycast(aimPoint.position, shootvector, hitDistance, Object.InputAuthority,
+                out var hitinfo, weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
             //player hit
             if (hitinfo.Hitbox != null)
             {
@@ -92,7 +101,18 @@ namespace Item
             else if (hitinfo.Collider != null)
             {
                 Debug.Log($"{Time.time} {transform.name} hit PhysX collider {hitinfo.Collider.transform.name}");
+                if (Object.HasStateAuthority)
+                {
+                    GameObject impactHole = Instantiate(weaponDataMono.weaponShootSettings.impactEffectPrefab, hitinfo.Point + hitinfo.Normal * 0.001f, Quaternion.LookRotation(hitinfo.Normal));
+                    Destroy(impactHole, 2f);
+                }
             }
+
+            //distace refactor to increase tolerance in long distance
+            distanceRefactor = (hitPointDistance / hitDistance) * 5;
+            //recoil aplied
+            if (Object.HasInputAuthority)
+                ApplyRecoil();
 
             lastTimeFired = Time.time;
         }
@@ -150,14 +170,14 @@ namespace Item
             if (weaponDataMono.weaponShootSettings.recoilPattern == null || weaponDataMono.weaponShootSettings.recoilPattern.pattern.Length == 0)
                 return;
 
-            cameraTransform = Player.NetworkPlayer.Local.gameObject.GetComponentInChildren<Camera>().transform;
+            recoilTolerance = weaponDataMono.weaponShootSettings.recoilTolerance * distanceRefactor;
 
             // Get the current recoil pattern point
             Vector2 recoilPoint = weaponDataMono.weaponShootSettings.recoilPattern.pattern[currentRecoilIndex];
-
+            Debug.Log("recoil index: " + currentRecoilIndex);
             // Add random tolerance
-            float randomX = Random.Range(-weaponDataMono.weaponShootSettings.recoilTolerance, weaponDataMono.weaponShootSettings.recoilTolerance);
-            float randomY = Random.Range(-weaponDataMono.weaponShootSettings.recoilTolerance, weaponDataMono.weaponShootSettings.recoilTolerance);
+            float randomX = Random.Range(-weaponDataMono.weaponShootSettings.recoilTolerance, recoilTolerance);
+            float randomY = Random.Range(-weaponDataMono.weaponShootSettings.recoilTolerance, recoilTolerance);
 
             currentRecoil = new Vector2(recoilPoint.x + randomX, recoilPoint.y + randomY) * weaponDataMono.weaponShootSettings.recoilIntensity;
 
@@ -169,7 +189,7 @@ namespace Item
 
             if (currentRecoilIndex >= weaponDataMono.weaponShootSettings.recoilPattern.pattern.Length)
             {
-                currentRecoilIndex--; // Loop the pattern if necessary
+                currentRecoilIndex--;
             }
         }
         IEnumerator ApplyRecoilToWeapon()
@@ -178,25 +198,46 @@ namespace Item
             yield return new WaitForSeconds(0.2f);
             isRecoiling = false;
 
-            for (int i = 0; i < 5; i++)
+            //wait 0.5 second for player to shoot again to follow the pattern from where the player left, check every 0.1 second
+            for (int i = 0; i < 10; i++)
             {
-                yield return new WaitForSeconds(0.1f);
-                if (isRecoiling)
+                yield return new WaitForSeconds(0.05f);
+                if (isFiring)
                     yield break;
             }
-            currentRecoilIndex = 1;
+            //waited 0.5 second, pattern will be followed from scratch
+            currentRecoilIndex = 0;
         }
         public override void FixedUpdateNetwork()
         {
-            if(isRecoiling)
+            if(Object.HasInputAuthority && interractComponent.Owner != null)
             {
-                cameraTransform.localRotation = Quaternion.Slerp(cameraTransform.localRotation,
+                interractComponent.Owner.gameObject.TryGetComponent<PlayerReferenceGetter>
+                    (out PlayerReferenceGetter playerReferenceGetter);
+                if(playerReferenceGetter != null)
+                {
+                    playerCamera = playerReferenceGetter.GetPlayerCamera();
+                    bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, playerCamera.forward,
+                        weaponDataMono.weaponShootSettings.hitDistance, Object.InputAuthority, out var detectedInfo,
+                        weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
+                    if (isHit)
+                    {
+                        playercameraHitpoint = detectedInfo.Point;
+                        hitPointDistance = detectedInfo.Distance;
+                        Debug.DrawLine(playerCamera.position, detectedInfo.Point, Color.red);
+                    }
+                }
+            }
+            
+            if (isRecoiling)
+            {
+                transform.localRotation = Quaternion.Slerp(transform.localRotation,
                     Quaternion.Euler(new Vector3(currentRecoil.y, currentRecoil.x, 0)),
                     weaponDataMono.weaponShootSettings.recoilSpeed);
             }
-            else if(cameraTransform != null)
+            else
             {
-                cameraTransform.localRotation = Quaternion.Slerp(cameraTransform.localRotation,
+                transform.localRotation = Quaternion.Slerp(transform.localRotation,
                     Quaternion.Euler(Vector3.zero),
                     weaponDataMono.weaponShootSettings.recoilSpeed);
             }

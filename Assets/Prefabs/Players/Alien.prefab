@@ -998,6 +998,7 @@ MonoBehaviour:
   hpHandler: {fileID: 2236272646455254436}
   weaponHolder: {fileID: 1627699624030451874}
   characterInputHandler: {fileID: 8954754819099828064}
+  playerCamera: {fileID: 1002878860943196849}
 --- !u!1 &4649520141373087188
 GameObject:
   m_ObjectHideFlags: 0

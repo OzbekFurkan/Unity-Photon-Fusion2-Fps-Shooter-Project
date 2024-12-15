@@ -12,6 +12,7 @@ namespace Player.UI
         [SerializeField] private HPHandler hpHandler;
         [SerializeField] private Transform weaponHolder;
         [SerializeField] private CharacterInputHandler characterInputHandler;
+        [SerializeField] private Transform playerCamera;
 
         public PlayerDataMono GetPlayerDataMono()
         {
@@ -32,6 +33,10 @@ namespace Player.UI
         public CharacterInputHandler GetCharacterInputHandler()
         {
             return characterInputHandler;
+        }
+        public Transform GetPlayerCamera()
+        {
+            return playerCamera;
         }
     }
 }

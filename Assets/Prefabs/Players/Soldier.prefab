@@ -223,7 +223,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2939500069090147586}
   - component: {fileID: 5851240862825117998}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: MinimapCamera
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -808,6 +808,7 @@ MonoBehaviour:
   hpHandler: {fileID: 2236272646455254436}
   weaponHolder: {fileID: 1627699624030451874}
   characterInputHandler: {fileID: 8954754819099828064}
+  playerCamera: {fileID: 1002878860943196849}
 --- !u!1 &4649520141373087188
 GameObject:
   m_ObjectHideFlags: 0

@@ -12,6 +12,7 @@ namespace Item
         public LayerMask collisionLayers;
         public float hitDistance;
         public byte hitDamage;
+        public GameObject impactEffectPrefab;
         public bool isAuto;
 
         [Header("Recoil")]
@@ -20,6 +21,8 @@ namespace Item
         public RecoilPatternData recoilPattern;
         [Range(0,1)]
         public float recoilIntensity;
+        [Range(0, 1)]
+        public float raycastRecoilIntensity;
         public float recoilTolerance; // Random tolerance for weapon inaccuracy
         [Range(0,1)]
         public float recoilSpeed;

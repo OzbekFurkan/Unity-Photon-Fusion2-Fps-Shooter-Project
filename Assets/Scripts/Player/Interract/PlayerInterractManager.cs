@@ -111,7 +111,7 @@ namespace Player.Interract
                         }
 
                     }
-                    else if(!inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
+                    else if(itemData != null && !inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
                     {
                         //display item slot full
                         OpenItemUI(grabbedItem, "Slot Full!");

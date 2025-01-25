@@ -21,8 +21,8 @@ namespace Item
         /// </summary>
         /// <param name="itemId">Unique identifier for each items</param>
         /// <param name="itemPrefab">Prefab gameobject for spawning</param>
-        /// <param name="itemIcon">Item icon for inventory demonstration</param>
-        /// <param name="itemSlot">Slot data to check if the slot is already taken</param>
+        /// <param name="itemIcon">Item icon for inventory demonstration on UI</param>
+        /// <param name="itemSlot">Slot data to check if the slot is already used</param>
         protected abstract void SetBaseProps(string itemName, int itemId, GameObject itemPrefab, Sprite itemIcon, int itemSlot);
 
     }

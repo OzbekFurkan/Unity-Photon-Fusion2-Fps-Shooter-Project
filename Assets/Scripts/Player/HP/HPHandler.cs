@@ -132,7 +132,7 @@ namespace Player
 
             if (Object.HasInputAuthority)
             {
-                uiOnHitImage.color = new Color(0, 0, 0, 0);
+                //uiOnHitImage.color = new Color(0, 0, 0, 0);
             }
                 
 
@@ -175,9 +175,8 @@ namespace Player
                 //team score for deathmatch
                 GameObject.FindAnyObjectByType<Deathmatch>()?.UpdateTeamScoresRpc(playerDataMono.playerData.team);
 
-                StartCoroutine(ServerReviveCO());
-                
                 isDead = true;
+                StartCoroutine(ServerReviveCO());
             }
         }
 
@@ -185,6 +184,7 @@ namespace Player
         {
             playerDataMono.playerState = PlayerState.Died;
             playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+
             yield return new WaitForSeconds(2.0f);
 
             characterMovementHandler.RequestRespawn();
@@ -194,9 +194,20 @@ namespace Player
         {
             //Reset variables
             playerDataMono.playerStateStack.Remove(PlayerState.Died);
+            playerDataMono.playerStateStack.Remove(PlayerState.Reloading);
+            playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
             playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+
             HP = startingHP;
+
             isDead = false;
+
+            playerModel.gameObject.SetActive(true);
+            hitboxRoot.HitboxRootActive = true;
+            characterMovementHandler.SetCharacterControllerEnabled(true);
+
+            inventoryManager.PlayerRevived();
+
             itemSwitch.SwitchSlot(itemSwitch.currentSlot);
         }
         #endregion

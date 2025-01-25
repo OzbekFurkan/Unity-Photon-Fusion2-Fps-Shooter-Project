@@ -33,7 +33,7 @@ namespace Player
             }
             else
             {
-                //Disable the camera if we are not the local player
+                //Disable the cameras if we are not the local player
                 localCamera.enabled = false;
                 minimapCamera.enabled = false;
 

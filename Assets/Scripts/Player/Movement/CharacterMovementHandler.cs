@@ -10,6 +10,10 @@ namespace Player
     {
         bool isRespawnRequested = false;
 
+        public float viewUpDownRotationSpeed;
+        public float rotationSpeed;
+        public float clampValue;
+
         //Other components
         NetworkCharacterController networkCharacterController;
         HPHandler hpHandler;
@@ -43,7 +47,6 @@ namespace Player
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {
-                
                 //Rotate the transform according to the client aim vector
                 transform.forward = networkInputData.aimForwardVector;
 

@@ -35,7 +35,7 @@ namespace Player
             {
                 SetParameterVariables();
                 SetAnimatorParameters();
-                SetHandsOnItem();
+                SetHandsOnItem();//consider place this method call outside the if block
             }
         }
 

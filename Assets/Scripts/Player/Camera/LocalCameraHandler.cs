@@ -8,12 +8,10 @@ namespace Player
     public class LocalCameraHandler : NetworkBehaviour
     {
 
-
         //Input
         Vector2 viewInput;
 
         //Rotation
-
         float cameraRotationX = 0;
 
         float cameraRotationY = 0;
@@ -29,19 +27,15 @@ namespace Player
             localCamera = GetComponentInChildren<Camera>();
         }
 
-        // Start is called before the first frame update
-        void Start()
+        public override void FixedUpdateNetwork()
         {
-
+            
         }
 
-        void LateUpdate()
+        private void LateUpdate()
         {
-
             if (!localCamera.enabled)
                 return;
-
-
 
             //Calculate rotation
             cameraRotationX += viewInput.y * Time.deltaTime * viewUpDownRotationSpeed;
@@ -49,12 +43,10 @@ namespace Player
 
             cameraRotationY += viewInput.x * Time.deltaTime * rotationSpeed;
 
-            //Apply rotation
+            // Apply rotation locally
             transform.rotation = Quaternion.Euler(cameraRotationX, cameraRotationY, 0);
 
         }
-
-
 
         public void SetViewInputVector(Vector2 viewInput)
         {

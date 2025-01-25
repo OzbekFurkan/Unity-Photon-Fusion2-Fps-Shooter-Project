@@ -10,6 +10,7 @@ namespace Player
         //movement
         public Vector2 movementInput;
         public Vector3 aimForwardVector;
+        public Vector2 lookRotationVector;
         public NetworkBool isJumpPressed;
         //weapon
         public NetworkBool isFireButtonPressed;

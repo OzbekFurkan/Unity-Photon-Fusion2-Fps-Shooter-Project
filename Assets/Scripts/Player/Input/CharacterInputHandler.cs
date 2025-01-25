@@ -116,11 +116,14 @@ namespace Player
         {
             NetworkInputData networkInputData = new NetworkInputData();
 
-            //Aim data
+            //Aim data but not sync change it!
             networkInputData.aimForwardVector = localCameraHandler.transform.forward;
 
             //Move data
             networkInputData.movementInput = moveInputVector;
+
+            //Look Rotation data
+            networkInputData.lookRotationVector = viewInputVector;
 
             //Jump data
             networkInputData.isJumpPressed = isJumpButtonPressed;

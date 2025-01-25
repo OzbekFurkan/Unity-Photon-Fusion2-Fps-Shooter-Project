@@ -564,6 +564,7 @@ MonoBehaviour:
   - {fileID: 4490125533690408939}
   - {fileID: 819276954179057302}
   - {fileID: 4876477102390311873}
+  - {fileID: 3948491207097202703}
   - {fileID: 5609042876777276819}
   - {fileID: 7821332812829864912}
   - {fileID: 9070980995486693685}
@@ -819,6 +820,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4845258001063610753}
   - component: {fileID: 4876477102390311873}
+  - component: {fileID: 3948491207097202703}
   m_Layer: 0
   m_Name: CameraHolder
   m_TagString: Untagged
@@ -857,6 +859,22 @@ MonoBehaviour:
   viewUpDownRotationSpeed: 200
   rotationSpeed: 200
   clampValue: 75
+--- !u!114 &3948491207097202703
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4649520141373087188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  SyncScale: 0
+  SyncParent: 0
+  _autoAOIOverride: 0
+  DisableSharedModeInterpolation: 0
 --- !u!1 &4649693919797105027
 GameObject:
   m_ObjectHideFlags: 0

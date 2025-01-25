@@ -46,7 +46,7 @@ namespace GameModes.Common
                 if (selectedTeam == (int)Team.Soldier)
                 {
                     spawnedPlayer = runner.Spawn(SoldierPlayerPrefab, GetSpawnPoint(), Quaternion.identity, player);
-                    selectedTeam = (int)Team.Alien;
+                    //selectedTeam = (int)Team.Alien;
                     runner.SetPlayerObject(player, spawnedPlayer.Object);
                 }
                 else

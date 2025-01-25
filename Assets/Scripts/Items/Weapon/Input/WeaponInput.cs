@@ -16,8 +16,6 @@ namespace Item
         }
         public override void FixedUpdateNetwork()
         {
-            if (Object.HasInputAuthority == false) return;
-
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {

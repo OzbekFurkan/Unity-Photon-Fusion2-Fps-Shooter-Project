@@ -77,8 +77,12 @@ namespace Player.Interract
         #region PICKUP
         private void CheckPickup()
         {
+            //Get the input from the network
+            if (!GetInput(out NetworkInputData networkInputData)) return;
+
             layerMask = LayerMask.GetMask("Pickupable");
-            bool isHit = Runner.LagCompensation.Raycast(transform.position, cameraTransform.forward, 3, Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
+            bool isHit = Runner.LagCompensation.Raycast(cameraTransform.position, networkInputData.aimForwardVector, 3,
+                Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
             if (isHit)
             {
                 
@@ -99,17 +103,13 @@ namespace Player.Interract
                     {
                         //display item ui
                         OpenItemUI(grabbedItem, itemData.itemName);
-
-                        //Get the input from the network
-                        if (GetInput(out NetworkInputData networkInputData))
+                        
+                        if (networkInputData.isPickUpButtonPressed)
                         {
-                            if (networkInputData.isPickUpButtonPressed)
-                            {
-                                HandlePickup(grabbedItem);
-                                return;
-                            }
+                            HandlePickup(grabbedItem);
+                            return;
                         }
-
+                        
                     }
                     else if(itemData != null && !inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
                     {
@@ -125,6 +125,7 @@ namespace Player.Interract
                 }
                 else
                 {
+                    Debug.Log("null geçti");
                     //when item null
                     CloseItemUI();
                 }

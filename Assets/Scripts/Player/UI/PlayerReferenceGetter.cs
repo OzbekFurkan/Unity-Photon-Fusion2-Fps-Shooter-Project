@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Fusion.Addons.SimpleKCC;
 
 namespace Player.UI
 {
@@ -13,6 +14,7 @@ namespace Player.UI
         [SerializeField] private Transform weaponHolder;
         [SerializeField] private CharacterInputHandler characterInputHandler;
         [SerializeField] private Transform playerCamera;
+        [SerializeField] private SimpleKCC playerKCC;
 
         public PlayerDataMono GetPlayerDataMono()
         {
@@ -37,6 +39,10 @@ namespace Player.UI
         public Transform GetPlayerCamera()
         {
             return playerCamera;
+        }
+        public SimpleKCC GetPlayerKCC()
+        {
+            return playerKCC;
         }
     }
 }

@@ -88,23 +88,22 @@ namespace Item
                 if (playerReferenceGetter != null)
                 {
                     playerCamera = playerReferenceGetter.GetPlayerCamera();
-                    //Get the input from the network
-                    if (GetInput(out NetworkInputData networkInputData))
+                    //Vector3 forwardVector = playerReferenceGetter.GetPlayerKCC().GetLookRotation(true, true);
+                    //Debug.DrawRay(playerCamera.position, forwardVector*20f, Color.red, 3000f);
+                    bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,
+                    weaponDataMono.weaponShootSettings.hitDistance, Object.InputAuthority, out var detectedInfo,
+                    weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
+                    if (isHit)
                     {
-                        bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,
-                        weaponDataMono.weaponShootSettings.hitDistance, Object.InputAuthority, out var detectedInfo,
-                        weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
-                        if (isHit)
+                        if (Object.HasStateAuthority)
                         {
-                            if (Object.HasStateAuthority)
-                            {
-                                playercameraHitpoint = detectedInfo.Point;
-                                hitPointDistance = detectedInfo.Distance;
-                                Debug.DrawLine(playerCamera.position, detectedInfo.Point, Color.red);
-                            }
+                            playercameraHitpoint = detectedInfo.Point;
+                            hitPointDistance = detectedInfo.Distance;
                         }
-                        else return;
+                            
                     }
+                    else return;
+                    
                 }
                 else return;
             }

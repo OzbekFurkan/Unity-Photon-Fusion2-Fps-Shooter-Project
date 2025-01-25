@@ -2,16 +2,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using Item;
 
 
 namespace Player
 {
-    [RequireComponent(typeof(NetworkCharacterController))]
+    [RequireComponent(typeof(SimpleKCC))]
     public class PlayerAnimationHandler : NetworkBehaviour
     {
         [Header("Components")]
-        [SerializeField] private NetworkCharacterController NCC;
+        [SerializeField] private SimpleKCC KCC;
         [SerializeField] private Animator animator;
 
         [Header("Animator Parameters")]
@@ -42,9 +43,9 @@ namespace Player
         #region SET_ANIMATION_PARAMETERS
         private void SetParameterVariables()
         {
-            isGrounded = NCC.Grounded;
-            horizontal = NCC.Velocity.x;
-            vertical = NCC.Velocity.y;
+            isGrounded = KCC.IsGrounded;
+            horizontal = KCC.RealVelocity.x;
+            vertical = KCC.RealVelocity.y;
         }
 
         private void SetAnimatorParameters()

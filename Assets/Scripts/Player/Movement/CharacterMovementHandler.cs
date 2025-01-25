@@ -2,7 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using Utilitiy;
+using GameModes.Common;
 
 namespace Player
 {
@@ -10,23 +12,18 @@ namespace Player
     {
         bool isRespawnRequested = false;
 
-        public float viewUpDownRotationSpeed;
-        public float rotationSpeed;
-        public float clampValue;
+        [Header("Movement Setup")]
+        public float JumpImpulse = 5f;
+        public float MovementSpeed = 8.0f;
 
-        //Other components
-        NetworkCharacterController networkCharacterController;
-        HPHandler hpHandler;
+        [Header("Player References")]
+        [SerializeField] SimpleKCC KCC;
+        [SerializeField] HPHandler hpHandler;
+        [SerializeField] PlayerDataMono playerData;
 
-        private void Awake()
+        public override void Spawned()
         {
-            networkCharacterController = GetComponent<NetworkCharacterController>();
-            hpHandler = GetComponent<HPHandler>();
-        }
-
-        // Start is called before the first frame update
-        void Start()
-        {
+            KCC.SetGravity(-9.81f * 2);
         }
 
         public override void FixedUpdateNetwork()
@@ -47,23 +44,25 @@ namespace Player
             //Get the input from the network
             if (GetInput(out NetworkInputData networkInputData))
             {
+
                 //Rotate the transform according to the client aim vector
-                transform.forward = networkInputData.aimForwardVector;
+                Vector3 aimForward = networkInputData.aimForwardVector;
+                Quaternion targetRotation = Quaternion.LookRotation(new Vector3(aimForward.x, 0, aimForward.z));
+                KCC.SetLookRotation(targetRotation);
 
-                //Cancel out rotation on X axis as we don't want our character to tilt
-                Quaternion rotation = transform.rotation;
-                rotation.eulerAngles = new Vector3(0, rotation.eulerAngles.y, rotation.eulerAngles.z);
-                transform.rotation = rotation;
-
-                //Move
+                //Move Vector
                 Vector3 moveDirection = transform.forward * networkInputData.movementInput.y + transform.right * networkInputData.movementInput.x;
                 moveDirection.Normalize();
 
-                networkCharacterController.Move(moveDirection);
+                float jumpImpulse = 0.0f;
 
                 //Jump
-                if (networkInputData.isJumpPressed)
-                    networkCharacterController.Jump();
+                if (networkInputData.isJumpPressed && KCC.IsGrounded)
+                {
+                    jumpImpulse = JumpImpulse;
+                }
+
+                KCC.Move(moveDirection*MovementSpeed, jumpImpulse);
 
                 //Check if we've fallen off the world.
                 CheckFallRespawn();
@@ -92,7 +91,11 @@ namespace Player
 
         void Respawn()
         {
-            networkCharacterController.Teleport(Utils.GetRandomSpawnPoint());
+            SpawnHandler _spawnHandler = FindObjectOfType<SpawnHandler>();
+            if(_spawnHandler != null)
+                KCC.Move((playerData.team == Team.Soldier)?
+                    _spawnHandler.soldierSpawnPointContainer.GetChild(_spawnHandler.soldierSpawnPointContainer.childCount-1).position:
+                    _spawnHandler.alienSpawnPointContainer.GetChild(_spawnHandler.alienSpawnPointContainer.childCount - 1).position);
 
             hpHandler.OnRespawned();
 
@@ -101,7 +104,7 @@ namespace Player
 
         public void SetCharacterControllerEnabled(bool isEnabled)
         {
-            networkCharacterController._controller.enabled = isEnabled;
+            KCC.SetActive(isEnabled);
         }
 
     }

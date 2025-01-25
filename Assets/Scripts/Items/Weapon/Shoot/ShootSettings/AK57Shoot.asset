@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   collisionLayers:
     serializedVersion: 2
-    m_Bits: 119
+    m_Bits: 4294967295
   hitDistance: 100
   hitDamage: 30
   impactEffectPrefab: {fileID: 8841237168206491380, guid: 5faf352c16546461a9a4188c9a42cc4f, type: 3}

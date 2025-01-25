@@ -88,8 +88,6 @@ namespace Item
                 if (playerReferenceGetter != null)
                 {
                     playerCamera = playerReferenceGetter.GetPlayerCamera();
-                    //Vector3 forwardVector = playerReferenceGetter.GetPlayerKCC().GetLookRotation(true, true);
-                    //Debug.DrawRay(playerCamera.position, forwardVector*20f, Color.red, 3000f);
                     bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,
                     weaponDataMono.weaponShootSettings.hitDistance, Object.InputAuthority, out var detectedInfo,
                     weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);

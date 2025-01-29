@@ -87,7 +87,7 @@ namespace Item
                     (out PlayerReferenceGetter playerReferenceGetter);
                 if (playerReferenceGetter != null)
                 {
-                    playerCamera = playerReferenceGetter.GetPlayerCamera();
+                    playerCamera = playerReferenceGetter.GetPlayerCameraHandle();
                     bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,
                     weaponDataMono.weaponShootSettings.hitDistance, Object.InputAuthority, out var detectedInfo,
                     weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
@@ -139,12 +139,8 @@ namespace Item
             {
                 Debug.Log($"{Time.time} {transform.name} hit PhysX collider {hitinfo.Collider.transform.name}");
 
-                if(Object.HasStateAuthority)
-                {
-                    fireHitPoint = hitinfo.Point;
-                    fireHitPointNormal = hitinfo.Normal;
-
-                }
+                fireHitPoint = hitinfo.Point;
+                fireHitPointNormal = hitinfo.Normal;
             }
 
             //visual fire and ammo decrement

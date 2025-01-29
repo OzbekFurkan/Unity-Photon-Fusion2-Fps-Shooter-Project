@@ -2,31 +2,43 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using GameModes.Modes;
 
 namespace Player
 {
-    public class CharacterInputHandler : MonoBehaviour
+    public enum InputButton
     {
+        Jump,
+        Fire,
+        Drop,
+        PickUp,
+        SlotRiffle,
+        SlotPistol,
+        SlotKnife,
+        SlotBomb,
+        SlotOther,
+        Leaderboard,
+        Pause
+    }
+
+    public class CharacterInputHandler : NetworkBehaviour, IBeforeUpdate, IAfterTick
+    {
+        [Header("References")]
         [SerializeField] private InputSettings inputSettings;
         [SerializeField] private PlayerDataMono playerDataMono;
+        private BaseGameMode baseGameMode;
 
-        //movement
-        Vector2 moveInputVector = Vector2.zero;
-        Vector2 viewInputVector = Vector2.zero;
-        [HideInInspector] bool isJumpButtonPressed = false;
-        //weapon
-        [HideInInspector] bool isFireButtonPressed = false;
-        [HideInInspector] public bool isAuto=false;
-        //interract
-        [HideInInspector] bool isDropButtonPressed = false;
-        [HideInInspector] bool isPickUpButtonPressed = false;
-        //item slot switch
-        [HideInInspector] public bool isRiffleSlotButtonPressed;
-        [HideInInspector] public bool isPistolSlotButtonPressed;
-        [HideInInspector] public bool isKnifeSlotButtonPressed;
-        [HideInInspector] public bool isBombSlotButtonPressed;
-        [HideInInspector] public bool isOtherSlotButtonPressed;
+        [Networked]
+        public NetworkButtons PreviousButtons { get; private set; }
+        public Vector2 lookRotation => _networkInput.lookRotationVector;
+
+        private NetworkInputData _networkInput;
+
+        //this variable assigned in ShootManager and decides whether the shooting proccess will be in auto mode ore not
+        public bool isAuto;
+
         //PlayerUI
+        //Needed for ui implementation in common ui (PlayerUIController)
         [HideInInspector] public bool isLeaderboardButtonPressed;
         [HideInInspector] public bool isPauseButtonPressed;
 
@@ -45,122 +57,104 @@ namespace Player
             Cursor.visible = false;
         }
 
-        // Update is called once per frame
-        void Update()
+        public override void Spawned()
         {
-            //can not set input when the game is paused by player or the player died
-            if (!GetComponent<NetworkObject>().HasInputAuthority && playerDataMono.playerState == PlayerState.Died)
+            if (HasInputAuthority == false)
                 return;
 
-            //PlayerUI
+            // Register to Fusion input poll callback
+            var networkEvents = Runner.GetComponent<NetworkEvents>();
+            networkEvents.OnInput.AddListener(OnInput);
+        }
+        public override void Despawned(NetworkRunner runner, bool hasState)
+        {
+            if (runner == null)
+                return;
+
+            var networkEvents = runner.GetComponent<NetworkEvents>();
+            if (networkEvents != null)
+            {
+                networkEvents.OnInput.RemoveListener(OnInput);
+            }
+        }
+
+        public void BeforeUpdate()
+        {
+            if (HasInputAuthority == false)
+                return;
+
+            // Accumulate input only if the cursor is locked.
+            if (Cursor.lockState != CursorLockMode.Locked)
+            {
+                _networkInput.movementInput = default;
+                return;
+            }
+
+            //player ui
+
+            //leaderboard
             if (Input.GetKeyDown(inputSettings.leaderboardKey))
                 isLeaderboardButtonPressed = true;
             else if (Input.GetKeyUp(inputSettings.leaderboardKey))
                 isLeaderboardButtonPressed = false;
+            _networkInput.Buttons.Set(InputButton.Leaderboard, isLeaderboardButtonPressed);
 
+            //pause
             if (Input.GetKeyDown(inputSettings.pauseKey))
                 isPauseButtonPressed = !isPauseButtonPressed;
+            _networkInput.Buttons.Set(InputButton.Pause, isPauseButtonPressed);
 
+            //no movement or action allowed when paused
             if (playerDataMono.playerState == PlayerState.Paused)
                 return;
 
-            //View input
-            viewInputVector.x = Input.GetAxis("Mouse X");
-            viewInputVector.y = Input.GetAxis("Mouse Y") * -1; //Invert the mouse look
+            //mouse look
+            _networkInput.lookRotationVector += new Vector2(-Input.GetAxisRaw("Mouse Y"), Input.GetAxisRaw("Mouse X"));
+            localCameraHandler.SetViewInputVector(_networkInput.lookRotationVector);
 
-            //Set view
-            localCameraHandler.SetViewInputVector(viewInputVector);
+            //movement
+            var moveDirection = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+            _networkInput.movementInput = moveDirection.normalized;
 
-            //Move input
-            moveInputVector.x = Input.GetAxis("Horizontal");
-            moveInputVector.y = Input.GetAxis("Vertical");
+            //jump
+            _networkInput.Buttons.Set(InputButton.Jump, Input.GetKey(inputSettings.jumpKey));
 
-            //Jump
-            if (Input.GetKeyDown(inputSettings.jumpKey))
-                isJumpButtonPressed = true;
-
-            //Fire
-            if (Input.GetKey(inputSettings.shootKey) && isAuto)
-                isFireButtonPressed = true;
-            else if(Input.GetKeyDown(inputSettings.shootKey) && !isAuto)
-                isFireButtonPressed = true;
+            //fire
+             _networkInput.Buttons.Set(InputButton.Fire, Input.GetKey(inputSettings.shootKey));
 
             //interract
-            //can not intract while reloading or already interacting
-            if(playerDataMono.playerState == PlayerState.Playing)
+            //can not intract while reloading or already interacting (other possibilities already eliminated above and OnInput)
+            if (playerDataMono.playerState == PlayerState.Playing)
             {
-                if (Input.GetKeyDown(inputSettings.dropkey))
-                    isDropButtonPressed = true;
-
-                if (Input.GetKeyDown(inputSettings.pickupKey))
-                    isPickUpButtonPressed = true;
+                _networkInput.Buttons.Set(InputButton.PickUp, Input.GetKey(inputSettings.pickupKey));
+                _networkInput.Buttons.Set(InputButton.Drop, Input.GetKey(inputSettings.dropkey));
             }
 
             //item slot switch
-            if (Input.GetKeyDown(inputSettings.riffleSlotKey))
-                isRiffleSlotButtonPressed = true;
-            if (Input.GetKeyDown(inputSettings.pistolSlotKey))
-                isPistolSlotButtonPressed = true;
-            if (Input.GetKeyDown(inputSettings.knifeSlotKey))
-                isKnifeSlotButtonPressed = true;
-            if (Input.GetKeyDown(inputSettings.bombSlotKey))
-                isBombSlotButtonPressed = true;
-            if (Input.GetKeyDown(inputSettings.otherSlotKey))
-                isOtherSlotButtonPressed = true;
-
-            
-
+            _networkInput.Buttons.Set(InputButton.SlotRiffle, Input.GetKey(inputSettings.riffleSlotKey));
+            _networkInput.Buttons.Set(InputButton.SlotPistol, Input.GetKey(inputSettings.pistolSlotKey));
+            _networkInput.Buttons.Set(InputButton.SlotKnife, Input.GetKey(inputSettings.knifeSlotKey));
+            _networkInput.Buttons.Set(InputButton.SlotBomb, Input.GetKey(inputSettings.bombSlotKey));
+            _networkInput.Buttons.Set(InputButton.SlotOther, Input.GetKey(inputSettings.otherSlotKey));
         }
 
-        public NetworkInputData GetNetworkInput()
+        public void AfterTick()
         {
-            NetworkInputData networkInputData = new NetworkInputData();
-
-            //Aim data but not sync change it!
-            networkInputData.aimForwardVector = localCameraHandler.transform.forward;
-
-            //Move data
-            networkInputData.movementInput = moveInputVector;
-
-            //Look Rotation data
-            networkInputData.lookRotationVector = viewInputVector;
-
-            //Jump data
-            networkInputData.isJumpPressed = isJumpButtonPressed;
-
-            //Fire data
-            networkInputData.isFireButtonPressed = isFireButtonPressed;
-
-            //Interract data
-            networkInputData.isDropButtonPressed = isDropButtonPressed;
-
-            networkInputData.isPickUpButtonPressed = isPickUpButtonPressed;
-
-            //Item Slot data
-            networkInputData.isRiffleSlotButtonPressed = isRiffleSlotButtonPressed;
-            networkInputData.isPistolSlotButtonPressed = isPistolSlotButtonPressed;
-            networkInputData.isKnifeSlotButtonPressed = isKnifeSlotButtonPressed;
-            networkInputData.isBombSlotButtonPressed = isBombSlotButtonPressed;
-            networkInputData.isOtherSlotButtonPressed = isOtherSlotButtonPressed;
-
-            //playerUI
-            networkInputData.isLeaderboardButtonPressed = isLeaderboardButtonPressed;
-            networkInputData.isPauseButtonPressed = isPauseButtonPressed;
-
-            //Reset variables now that we have read their states
-            isJumpButtonPressed = false;
-            isFireButtonPressed = false;
-            isDropButtonPressed = false;
-            isPickUpButtonPressed = false;
-            isRiffleSlotButtonPressed = false;
-            isPistolSlotButtonPressed = false;
-            isKnifeSlotButtonPressed = false;
-            isBombSlotButtonPressed = false;
-            isOtherSlotButtonPressed = false;
-            
-
-            return networkInputData;
+            // Save current button input as previous.
+            // Previous buttons need to be networked to detect correctly pressed/released events.
+            PreviousButtons = GetInput<NetworkInputData>().GetValueOrDefault().Buttons;
         }
+
+        // Fusion polls accumulated input. This callback can be executed multiple times in a row if there is a performance spike.
+        private void OnInput(NetworkRunner runner, NetworkInput networkInput)
+        {
+            baseGameMode = FindObjectOfType<BaseGameMode>();
+
+            //no input allowed when player died
+            if (playerDataMono.playerState != PlayerState.Died && baseGameMode != null && baseGameMode.gameState == GameState.Playing)
+                networkInput.Set(_networkInput);
+        }
+
     }
 }
 

@@ -13,7 +13,7 @@ namespace Player.Interract
     public class PlayerInterractManager : NetworkBehaviour
     {
         [Header("Pickup")]
-        [Tooltip("The transform of the gameobject that has Camera component"), SerializeField] private Transform cameraTransform;
+        [Tooltip("The transform of the camera holder gameobject named camera handle"), SerializeField] private Transform cameraHandle;
         LayerMask layerMask;
 
         [Header("Required Components")]
@@ -21,6 +21,7 @@ namespace Player.Interract
         [SerializeField] private GameObject weaponHolder;
         [SerializeField] private ItemSwitch itemSwitch;
         [SerializeField] private PlayerDataMono playerDataMono;
+        [SerializeField] private CharacterInputHandler _input;
 
         #region NETWORK_SYNC
         public override void Spawned()
@@ -43,17 +44,19 @@ namespace Player.Interract
             if (!Object.HasInputAuthority)
                 return;
 
-            CheckPickup();
+            //getting input from network
+            var input = GetInput<NetworkInputData>();
+            ProcessInput(input.GetValueOrDefault(), _input.PreviousButtons);
+            
+        }
 
-            //Get the input from the network
-            if (GetInput(out NetworkInputData networkInputData))
-            {
-                if (networkInputData.isDropButtonPressed)
-                {
-                    HandleDrop();
-                }
-            }
+        private void ProcessInput(NetworkInputData input, NetworkButtons previousButtons)
+        {
+            CheckPickup(input, previousButtons);
 
+            // Comparing current input buttons to previous input buttons - this prevents glitches when input is lost
+            if (input.Buttons.WasPressed(previousButtons, InputButton.Drop))
+                HandleDrop();
         }
         #endregion
 
@@ -75,13 +78,11 @@ namespace Player.Interract
         #endregion
 
         #region PICKUP
-        private void CheckPickup()
+        private void CheckPickup(NetworkInputData input, NetworkButtons previousButtons)
         {
-            //Get the input from the network
-            if (!GetInput(out NetworkInputData networkInputData)) return;
 
             layerMask = LayerMask.GetMask("Pickupable");
-            bool isHit = Runner.LagCompensation.Raycast(cameraTransform.position, networkInputData.aimForwardVector, 3,
+            bool isHit = Runner.LagCompensation.Raycast(cameraHandle.position, cameraHandle.forward, 3,
                 Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
             if (isHit)
             {
@@ -90,7 +91,7 @@ namespace Player.Interract
                     return;
 
                 detectedInfo.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
-                Debug.Log("component alindi " + detectedInfo.Collider.transform.root.name);
+                Debug.Log("component possesed " + detectedInfo.Collider.transform.root.name);
                 if (grabbedItem != null)
                 {
                     if (grabbedItem.IsPickedUp)
@@ -98,13 +99,14 @@ namespace Player.Interract
                         
 
                     detectedInfo.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
-                    Debug.Log("slot uygunluk: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
+                    Debug.Log("slot availability: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
                     if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
                     {
                         //display item ui
                         OpenItemUI(grabbedItem, itemData.itemName);
-                        
-                        if (networkInputData.isPickUpButtonPressed)
+
+                        //check input
+                        if (input.Buttons.WasPressed(previousButtons, InputButton.PickUp))
                         {
                             HandlePickup(grabbedItem);
                             return;
@@ -125,12 +127,12 @@ namespace Player.Interract
                 }
                 else
                 {
-                    Debug.Log("null geçti");
+                    Debug.Log("null");
                     //when item null
                     CloseItemUI();
                 }
 
-                Debug.Log("bos gecti");
+                Debug.Log("nullll");
                 
             }
             else
@@ -176,7 +178,7 @@ namespace Player.Interract
         [Rpc(sources:RpcSources.StateAuthority, targets: RpcTargets.InputAuthority|RpcTargets.StateAuthority)]
         public void SendPickUpCallBackRpc(int itemId, NetworkId networkId)
         {
-            Debug.Log("pickup callback yollandi");
+            Debug.Log("pickup callback sent");
             inventoryManager.ItemPicked(itemId, networkId);
             playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
             playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();

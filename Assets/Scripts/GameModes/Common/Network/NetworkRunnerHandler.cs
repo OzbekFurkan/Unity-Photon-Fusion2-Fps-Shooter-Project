@@ -18,14 +18,9 @@ namespace GameModes.Common
 
         NetworkRunner networkRunner;
 
-        //player component to listen player's input events
-        CharacterInputHandler characterInputHandler;
-
         JoinRoomHandler joinRoomHandler;
 
         MenuLifeCycleHandler menuLifeCycleHandler;
-
-        BaseGameMode baseGameMode;
 
         #region USED_NETWORK_RUNNER_CALLBACKS
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
@@ -34,14 +29,6 @@ namespace GameModes.Common
         }
         public void OnInput(NetworkRunner runner, NetworkInput input)
         {
-            if (characterInputHandler == null && Player.NetworkPlayer.Local != null)
-            {
-                characterInputHandler = Player.NetworkPlayer.Local.GetComponent<CharacterInputHandler>();
-                baseGameMode = FindObjectOfType<BaseGameMode>();
-            }  
-
-            if (characterInputHandler != null && baseGameMode != null && baseGameMode.gameState == GameState.Playing)
-                input.Set(characterInputHandler.GetNetworkInput());
 
         }
 

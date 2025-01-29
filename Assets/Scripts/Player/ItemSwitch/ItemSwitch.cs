@@ -14,6 +14,8 @@ namespace Player
 
         [SerializeField] private Transform weaponHolder;
 
+        public CharacterInputHandler _input;
+
         #region NETWORK_SYNC
         public void OnSlotChange()
         {
@@ -41,21 +43,24 @@ namespace Player
 
         public override void FixedUpdateNetwork()
         {
-            //Get the input from the network
-            if (GetInput(out NetworkInputData networkInputData))
-            {
-                if (networkInputData.isRiffleSlotButtonPressed)
-                    SwitchSlot((int)ItemSlot.Rifle);
-                if (networkInputData.isPistolSlotButtonPressed)
-                    SwitchSlot((int)ItemSlot.Pistol);
-                if (networkInputData.isKnifeSlotButtonPressed)
-                    SwitchSlot((int)ItemSlot.Knife);
-                if (networkInputData.isBombSlotButtonPressed)
-                    SwitchSlot((int)ItemSlot.Bomb);
-                if (networkInputData.isOtherSlotButtonPressed)
-                    SwitchSlot((int)ItemSlot.Other);
-            }
+            //getting input from network
+            var input = GetInput<NetworkInputData>();
+            ProcessInput(input.GetValueOrDefault(), _input.PreviousButtons);
+        }
 
+        private void ProcessInput(NetworkInputData input, NetworkButtons previousButtons)
+        {
+            // Comparing current input buttons to previous input buttons - this prevents glitches when input is lost
+            if (input.Buttons.WasPressed(previousButtons, InputButton.SlotRiffle))
+                SwitchSlot((int)ItemSlot.Rifle);
+            if (input.Buttons.WasPressed(previousButtons, InputButton.SlotPistol))
+                SwitchSlot((int)ItemSlot.Pistol);
+            if (input.Buttons.WasPressed(previousButtons, InputButton.SlotKnife))
+                SwitchSlot((int)ItemSlot.Knife);
+            if (input.Buttons.WasPressed(previousButtons, InputButton.SlotBomb))
+                SwitchSlot((int)ItemSlot.Bomb);
+            if (input.Buttons.WasPressed(previousButtons, InputButton.SlotOther))
+                SwitchSlot((int)ItemSlot.Other);
         }
 
         public void SwitchSlot(int newSlot)

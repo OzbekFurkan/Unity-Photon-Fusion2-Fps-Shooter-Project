@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 
 namespace Player
 {
@@ -11,41 +12,39 @@ namespace Player
         //Input
         Vector2 viewInput;
 
-        //Rotation
-        float cameraRotationX = 0;
+        //References
+        public Transform CameraPivot;
+        public Transform CameraHandle;
+        public Transform WeaponHolder;
+        public Transform WeaponHolderTarget;
+        public SimpleKCC KCC;
+        public CharacterInputHandler _input;
 
-        float cameraRotationY = 0;
-
-        public float viewUpDownRotationSpeed;
-        public float rotationSpeed;
-        public float clampValue;
-
-        Camera localCamera;
-
-        private void Awake()
+        public override void Render()
         {
-            localCamera = GetComponentInChildren<Camera>();
-        }
-
-        public override void FixedUpdateNetwork()
-        {
-            
+            if (HasInputAuthority)
+            {
+                // Set look rotation for Render.
+                KCC.SetLookRotation(_input.lookRotation, -90f, 90f);
+            }
         }
 
         private void LateUpdate()
         {
-            if (!localCamera.enabled)
-                return;
+            // Update camera pivot (influences ChestIK)
+            // (KCC look rotation is set earlier in Render)
+            var pitchRotation = KCC.GetLookRotation(true, false);
+            CameraPivot.localRotation = Quaternion.Euler(pitchRotation);
 
-            //Calculate rotation
-            cameraRotationX += viewInput.y * Time.deltaTime * viewUpDownRotationSpeed;
-            cameraRotationX = Mathf.Clamp(cameraRotationX, -clampValue, clampValue);
-
-            cameraRotationY += viewInput.x * Time.deltaTime * rotationSpeed;
-
-            // Apply rotation locally
-            transform.rotation = Quaternion.Euler(cameraRotationX, cameraRotationY, 0);
-
+            // Only InputAuthority needs to update camera
+            if (HasInputAuthority)
+            {
+                // Transfer properties from camera handle to Main Camera.
+                Camera.main.transform.SetPositionAndRotation(CameraHandle.position, CameraHandle.rotation);
+            }
+            
+            // Transfer rotation from weapon holder target to weapon holder.
+            WeaponHolder.SetPositionAndRotation(WeaponHolderTarget.position, WeaponHolderTarget.rotation);
         }
 
         public void SetViewInputVector(Vector2 viewInput)

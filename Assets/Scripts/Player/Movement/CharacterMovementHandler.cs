@@ -20,6 +20,8 @@ namespace Player
         [SerializeField] SimpleKCC KCC;
         [SerializeField] HPHandler hpHandler;
         [SerializeField] PlayerDataMono playerData;
+        [SerializeField] Transform CameraPivot;
+        [SerializeField] CharacterInputHandler _input;
 
         public override void Spawned()
         {
@@ -41,33 +43,32 @@ namespace Player
                     return;
             }
 
-            //Get the input from the network
-            if (GetInput(out NetworkInputData networkInputData))
+            //get the input from network
+            var input = GetInput<NetworkInputData>();
+            ProcessInput(input.GetValueOrDefault(), _input.PreviousButtons);
+
+        }
+
+        private void ProcessInput(NetworkInputData input, NetworkButtons previousButtons)
+        {
+            KCC.SetLookRotation(input.lookRotationVector, -90f, 90f);
+
+            //Move Vector
+            Vector3 moveDirection = transform.forward * input.movementInput.y + transform.right * input.movementInput.x;
+            moveDirection.Normalize();
+
+            float jumpImpulse = 0.0f;
+
+            //Jump
+            if (input.Buttons.WasPressed(previousButtons, InputButton.Jump) && KCC.IsGrounded)
             {
-
-                //Rotate the transform according to the client aim vector
-                Vector3 aimForward = networkInputData.aimForwardVector;
-                Quaternion targetRotation = Quaternion.LookRotation(new Vector3(aimForward.x, 0, aimForward.z));
-                KCC.SetLookRotation(targetRotation);
-
-                //Move Vector
-                Vector3 moveDirection = transform.forward * networkInputData.movementInput.y + transform.right * networkInputData.movementInput.x;
-                moveDirection.Normalize();
-
-                float jumpImpulse = 0.0f;
-
-                //Jump
-                if (networkInputData.isJumpPressed && KCC.IsGrounded)
-                {
-                    jumpImpulse = JumpImpulse;
-                }
-
-                KCC.Move(moveDirection*MovementSpeed, jumpImpulse);
-
-                //Check if we've fallen off the world.
-                CheckFallRespawn();
+                jumpImpulse = JumpImpulse;
             }
 
+            KCC.Move(moveDirection * MovementSpeed, jumpImpulse);
+
+            //Check if we've fallen off the world.
+            CheckFallRespawn();
         }
 
         void CheckFallRespawn()

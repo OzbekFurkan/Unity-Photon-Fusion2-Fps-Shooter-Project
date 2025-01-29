@@ -11,7 +11,6 @@ namespace Player
         public static NetworkPlayer Local { get; set; }
 
         public Transform playerModel;
-        public Camera localCamera;
         public Camera minimapCamera;
 
         // Start is called before the first frame update
@@ -26,7 +25,7 @@ namespace Player
             {
                 Local = this;
                 
-                //Sets the layer of the local players model
+                //Sets the layer of the local players model and our player model becomes visible for only remote players
                 Utils.SetRenderLayerInChildren(playerModel, LayerMask.NameToLayer("LocalPlayerModel"));
 
                 Debug.Log("Spawned local player");
@@ -34,7 +33,6 @@ namespace Player
             else
             {
                 //Disable the cameras if we are not the local player
-                localCamera.enabled = false;
                 minimapCamera.enabled = false;
 
                 //Only 1 audio listner is allowed in the scene so disable remote players audio listner

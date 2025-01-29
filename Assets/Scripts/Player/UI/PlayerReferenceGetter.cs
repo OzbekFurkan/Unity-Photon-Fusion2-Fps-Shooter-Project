@@ -13,7 +13,8 @@ namespace Player.UI
         [SerializeField] private HPHandler hpHandler;
         [SerializeField] private Transform weaponHolder;
         [SerializeField] private CharacterInputHandler characterInputHandler;
-        [SerializeField] private Transform playerCamera;
+        [SerializeField] private Transform playerCameraHandle;
+        [SerializeField] private Transform playerCameraPivot;
         [SerializeField] private SimpleKCC playerKCC;
 
         public PlayerDataMono GetPlayerDataMono()
@@ -36,9 +37,13 @@ namespace Player.UI
         {
             return characterInputHandler;
         }
-        public Transform GetPlayerCamera()
+        public Transform GetPlayerCameraHandle()
         {
-            return playerCamera;
+            return playerCameraHandle;
+        }
+        public Transform GetPlayerCameraPivot()
+        {
+            return playerCameraPivot;
         }
         public SimpleKCC GetPlayerKCC()
         {

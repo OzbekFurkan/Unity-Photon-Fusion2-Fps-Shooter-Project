@@ -745,6 +745,7 @@ MonoBehaviour:
   - {fileID: 8439091692384082190}
   - {fileID: 1211395753002933841}
   - {fileID: 6992278167077286510}
+  - {fileID: 8954754819099828064}
   - {fileID: 1852728354347325528}
   - {fileID: 2236272646455254436}
   - {fileID: 6239717404664747632}
@@ -760,6 +761,7 @@ MonoBehaviour:
   - {fileID: 9070980995486693685}
   - {fileID: 8888541065099810697}
   - {fileID: 4466893086942037251}
+  ForceRemoteRenderTimeframe: 0
 --- !u!114 &8439091692384082190
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -773,7 +775,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerModel: {fileID: 8054853945983303956}
-  localCamera: {fileID: 7230795862830266498}
   minimapCamera: {fileID: 5851240862825117998}
 --- !u!143 &2694424080956736762
 CharacterController:
@@ -813,6 +814,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 378411a89480da345945c2f888327a2d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
   gravity: -20
   jumpImpulse: 8
   acceleration: 50
@@ -832,6 +834,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 081aacd15ed329b4b9dad84887881863, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  JumpImpulse: 5
+  MovementSpeed: 8
+  KCC: {fileID: 0}
+  hpHandler: {fileID: 0}
+  playerData: {fileID: 0}
+  CameraPivot: {fileID: 0}
 --- !u!114 &8954754819099828064
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -905,7 +913,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6d8dc0bf273654de28cbfeb9dfd907be, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cameraTransform: {fileID: 1002878860943196849}
+  cameraHandle: {fileID: 0}
   inventoryManager: {fileID: 6863025440145560926}
   weaponHolder: {fileID: 7055861605000821120}
   itemSwitch: {fileID: 7171961804328239409}
@@ -976,7 +984,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53bcaf45869984a799091e77f72c7f4f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  NCC: {fileID: 1211395753002933841}
+  KCC: {fileID: 0}
   animator: {fileID: 3836239115909349365}
   itemSwitch: {fileID: 7171961804328239409}
   weaponHolder: {fileID: 1627699624030451874}
@@ -1000,6 +1008,7 @@ MonoBehaviour:
   weaponHolder: {fileID: 1627699624030451874}
   characterInputHandler: {fileID: 8954754819099828064}
   playerCamera: {fileID: 1002878860943196849}
+  playerKCC: {fileID: 0}
 --- !u!1 &4649520141373087188
 GameObject:
   m_ObjectHideFlags: 0
@@ -1046,9 +1055,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bedddce8203d2204b86f02bb261b6bf6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  viewUpDownRotationSpeed: 200
-  rotationSpeed: 200
-  clampValue: 75
+  CameraPivot: {fileID: 0}
+  CameraHandle: {fileID: 0}
+  KCC: {fileID: 0}
 --- !u!114 &4022608260808038986
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1061,6 +1070,7 @@ MonoBehaviour:
   m_Script: {fileID: 158639473, guid: e725a070cec140c4caffb81624c8c787, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
   SyncScale: 0
   SyncParent: 0
   _autoAOIOverride: 0
@@ -1801,11 +1811,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Animator: {fileID: 3836239115909349365}
-  TotalWords: 4
   ApplyTiming: 2
   SyncSettings: 79
   StateHashes: 000000002b1a167c79406955a2732dcc2650fb232b7cf93b18cfdc0c28a981077af3fe2ef7d4f03cc467d50bdc6ddd88584e0b677edb24cbfaf8f224e7d27e8763f1a868
   TriggerHashes: 00000000
+  TotalWords: 4
 --- !u!114 &3088730382753848577
 MonoBehaviour:
   m_ObjectHideFlags: 0

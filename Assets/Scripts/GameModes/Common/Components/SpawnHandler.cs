@@ -55,10 +55,6 @@ namespace GameModes.Common
                     selectedTeam = (int)Team.Soldier;
                     runner.SetPlayerObject(player, spawnedPlayer.Object);
                 } 
-                if (spawnedPlayer.HasInputAuthority)
-                {
-                    Camera.main.gameObject.SetActive(false);
-                }
 
             }
             else Debug.Log("OnPlayerJoined");

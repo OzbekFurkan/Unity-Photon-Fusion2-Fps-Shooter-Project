@@ -6,10 +6,12 @@ using Utilitiy;
 
 namespace Player
 {
-    public class NetworkPlayer : NetworkBehaviour, IPlayerLeft
+    public class NetworkPlayer : NetworkBehaviour
     {
+        //singleton to access local player object easier
         public static NetworkPlayer Local { get; set; }
 
+        [Header("References")]
         public Transform playerModel;
         public Camera minimapCamera;
 
@@ -23,16 +25,16 @@ namespace Player
         {
             if (Object.HasInputAuthority)
             {
-                Local = this;
-                
+                Local = this;//assign singleton if it is us
+
                 //Sets the layer of the local players model and our player model becomes visible for only remote players
-                Utils.SetRenderLayerInChildren(playerModel, LayerMask.NameToLayer("LocalPlayerModel"));
+                Utility.SetRenderLayerInChildren(playerModel, LayerMask.NameToLayer("LocalPlayerModel"));
 
                 Debug.Log("Spawned local player");
             }
             else
             {
-                //Disable the cameras if we are not the local player
+                //Disable the minimap camera if we are not the local player
                 minimapCamera.enabled = false;
 
                 //Only 1 audio listner is allowed in the scene so disable remote players audio listner
@@ -44,13 +46,6 @@ namespace Player
 
             //Make it easier to tell which player is which.
             transform.name = $"P_{Object.InputAuthority.PlayerId}";
-        }
-
-        public void PlayerLeft(PlayerRef player)
-        {
-            if (player == Object.InputAuthority)
-                Runner.Despawn(Object);
-
         }
     }
 }

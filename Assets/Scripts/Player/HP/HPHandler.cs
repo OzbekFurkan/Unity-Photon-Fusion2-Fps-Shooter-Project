@@ -28,10 +28,6 @@ namespace Player
         PlayerRef killerPlayer;
         GameObject killerGameObject;
 
-        [Header("DeathUI")]
-        public Color uiOnHitColor;
-        public Image uiOnHitImage;
-
         [Header("Effects")]
         public GameObject playerModel;//our model will be invisivle when died and will be visible when revieved
         public GameObject deathGameObjectPrefab;//particle effect to play when died

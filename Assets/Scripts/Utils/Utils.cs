@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Utilitiy
 {
 
-    public static class Utils
+    public static class Utility
     {
         public static Vector3 GetRandomSpawnPoint()
         {

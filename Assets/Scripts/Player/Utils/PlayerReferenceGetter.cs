@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Fusion.Addons.SimpleKCC;
 
-namespace Player.UI
+namespace Player.Utils
 {
     public class PlayerReferenceGetter : MonoBehaviour
     {

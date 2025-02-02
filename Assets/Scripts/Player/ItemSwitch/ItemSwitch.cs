@@ -12,8 +12,8 @@ namespace Player
     {
         [Networked, OnChangedRender(nameof(OnSlotChange))] public int currentSlot { get; set; }
 
+        [Header("Player References")]
         [SerializeField] private Transform weaponHolder;
-
         public CharacterInputHandler _input;
 
         #region NETWORK_SYNC
@@ -65,32 +65,29 @@ namespace Player
 
         public void SwitchSlot(int newSlot)
         {
+            //disable all slots
             for(int i=0; i<weaponHolder.childCount; i++)
-            {
-                weaponHolder.GetChild(i).gameObject.SetActive(false);
-                if(weaponHolder.GetChild(i).childCount>0)
-                {
-                    GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
-                    item.TryGetComponent<InterractComponent>(out var interractComponent);
-                    if (interractComponent)
-                        interractComponent.isItemActive = false;
-                }
-               
-            }
+                ToggleSlotEnable(i, false);
 
-            weaponHolder.GetChild(newSlot).gameObject.SetActive(true);
-            if (weaponHolder.GetChild(newSlot).childCount > 0)
-            {
-                GameObject item = weaponHolder.GetChild(newSlot).GetChild(0).gameObject;
-                item.TryGetComponent<InterractComponent>(out var interractComponent);
-                if (interractComponent)
-                    interractComponent.isItemActive = true;
-            }
+            //enable new slot
+            ToggleSlotEnable(newSlot, true);
 
+            //set new slot value to networked current slot variable
             currentSlot = newSlot;
         }
 
-
+        private void ToggleSlotEnable(int slot, bool state)
+        {
+            weaponHolder.GetChild(slot).gameObject.SetActive(state);
+            //if there is an item in that slot, isItemActive value of this item should be updated.
+            if (weaponHolder.GetChild(slot).childCount > 0)
+            {
+                GameObject item = weaponHolder.GetChild(slot).GetChild(0).gameObject;
+                item.TryGetComponent<InterractComponent>(out var interractComponent);
+                if (interractComponent)
+                    interractComponent.isItemActive = state;
+            }
+        }
 
 
     }

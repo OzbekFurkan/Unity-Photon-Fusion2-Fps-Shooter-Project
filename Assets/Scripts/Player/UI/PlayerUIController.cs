@@ -5,13 +5,13 @@ using TMPro;
 using GameModes.Common;
 using Fusion;
 using UnityEngine.UI;
+using Player.Utils;
 using Item;
 
 namespace Player.UI
 {
     public class PlayerUIController : MonoBehaviour
-    {
-        
+    {   
         [Header("References")]
         [SerializeField] SpawnHandler spawnHandler;
         [SerializeField] CanvasGroup playerUI;
@@ -26,6 +26,11 @@ namespace Player.UI
 
         [Header("Hp Data UI")]
         [SerializeField] Slider hpBarSlider;
+
+        [Header("OnHitUI")]
+        private byte prevHP=100;
+        public Color uiOnHitColor;
+        public Image uiOnHitImage;
 
         [Header("SlotUI")]
         [SerializeField] GameObject slotUI;
@@ -46,11 +51,17 @@ namespace Player.UI
                 playerUI.alpha = 0;
                 return;
             }
+
             playerUI.alpha = 1;
             InitializeReferences();
 
+            //null check of references
+            if (playerDataMono == null || itemSwitch == null || hpHandler == null ||
+                weaponHolder == null || weaponHolder == null) return;
+
             SetAmmoText();
             SetHpBarSlider();
+            ShowHitEffectOnHit();
             SetSlotUI();
 
             HandleInput();
@@ -60,43 +71,51 @@ namespace Player.UI
         private void InitializeReferences()
         {
             spawnHandler.LocalPlayer.TryGetComponent<PlayerReferenceGetter>(out PlayerReferenceGetter playerReferenceGetter);
-            if(playerReferenceGetter != null)
-            {
-                playerDataMono = playerReferenceGetter.GetPlayerDataMono();
-                itemSwitch = playerReferenceGetter.GetItemSwitch();
-                hpHandler = playerReferenceGetter.GetHPHandler();
-                weaponHolder = playerReferenceGetter.GetWeaponHolder();
-                characterInputHandler = playerReferenceGetter.GetCharacterInputHandler();
-            }
+
+            if (playerReferenceGetter == null) return;
+
+            //set references
+            playerDataMono = playerReferenceGetter.GetPlayerDataMono();
+            itemSwitch = playerReferenceGetter.GetItemSwitch();
+            hpHandler = playerReferenceGetter.GetHPHandler();
+            weaponHolder = playerReferenceGetter.GetWeaponHolder();
+            characterInputHandler = playerReferenceGetter.GetCharacterInputHandler();
         }
 
         #region AMMO
         private void SetAmmoText()
         {
-            if (weaponHolder.GetChild(itemSwitch.currentSlot).childCount > 0)
-            {
-                weaponHolder.GetChild(itemSwitch.currentSlot).GetChild(0).gameObject.TryGetComponent<WeaponDataMono>(out var weaponData);
+            Transform _currentSlot = weaponHolder.GetChild(itemSwitch.currentSlot);
 
-                if (weaponData != null && weaponData.isActiveAndEnabled && weaponData.Object != null)
-                {
-                    if (playerDataMono.playerState == PlayerState.Reloading)
-                    {
-                        ammoText.text = "Reloading...";
-                        return;
-                    }
-                    int ammoData = weaponData.ammo;
-                    int fullAmmoData = weaponData.fullAmmo;
-                    ammoText.text = ammoData + "/" + fullAmmoData;
-                }
-                else
-                {
-                    ammoText.text = "";
-                }
-            }
-            else
+            //make it empty if there is no item in the current slot
+            if(_currentSlot.childCount <= 0)
             {
                 ammoText.text = "";
+                return;
             }
+
+            _currentSlot.GetChild(0).gameObject.TryGetComponent<WeaponDataMono>(out var weaponData);
+
+            //weapon data null checks, make it empty if it is
+            if(weaponData == null || !weaponData.isActiveAndEnabled || weaponData.Object == null)
+            {
+                ammoText.text = "";
+                return;
+            }
+
+            //write reloading while reloding and return (this reloading thing is optional)
+            if (playerDataMono.playerState == PlayerState.Reloading)
+            {
+                ammoText.text = "Reloading...";
+                return;
+            }
+
+            //set ammo values
+            int ammoData = weaponData.ammo;
+            int fullAmmoData = weaponData.fullAmmo;
+            ammoText.text = ammoData + "/" + fullAmmoData;
+
+
         }
         #endregion
 
@@ -104,6 +123,17 @@ namespace Player.UI
         private void SetHpBarSlider()
         {
             hpBarSlider.value = hpHandler.HP;
+        }
+        #endregion
+
+        #region ON_HIT
+        private void ShowHitEffectOnHit()
+        {
+            if(hpHandler.HP < 100 && hpHandler.HP < prevHP)
+            {
+                uiOnHitImage.color = uiOnHitColor;
+                prevHP = hpHandler.HP;
+            }
         }
         #endregion
 
@@ -116,39 +146,41 @@ namespace Player.UI
                 //empty slots setted as blank icon
                 if (weaponHolder.GetChild(i).childCount <= 0)
                 {
-                    slotUI.transform.GetChild(i).gameObject.TryGetComponent<Image>(out Image image);
-                    if (image != null)
-                    {
-                        image.sprite = blankSlotIcon;
-                        //dark-gray overlay by default
-                        image.color = SetOverlayOnSlotIcons("#858585");
-                    }
+                    SetSlotIcon(i);
+
                 }
                 //non-empty slots setted as their own icons
                 else
                 {
                     GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
                     item.TryGetComponent<ItemDataMono>(out ItemDataMono itemData);
-                    if (itemData != null)
-                    {
-                        slotUI.transform.GetChild(i).gameObject.TryGetComponent<Image>(out Image image);
-                        if (image != null)
-                        {
-                            image.sprite = itemData.itemIcon;
-                            //dark-gray overlay by default
-                            image.color = SetOverlayOnSlotIcons("#858585");
-                        }
-                    }
+
+                    if (itemData == null) return;
+
+                    SetSlotIcon(i, itemData.itemIcon);
                 }
 
             }
 
-            //Set Current Slot Overlay White
+            //Set Current Slot Overlay As White
             slotUI.transform.GetChild(itemSwitch.currentSlot).gameObject.TryGetComponent<Image>(out Image currentSlotImage);
-            if (currentSlotImage != null)
-            {
-                currentSlotImage.color = SetOverlayOnSlotIcons("#FFFFF");
-            }
+
+            if (currentSlotImage == null) return;
+
+            currentSlotImage.color = SetOverlayOnSlotIcons("#FFFFF");
+        }
+        private void SetSlotIcon(int slot, Sprite itemIcon = null)
+        {
+            if (itemIcon == null)
+                itemIcon = blankSlotIcon;
+
+            slotUI.transform.GetChild(slot).gameObject.TryGetComponent<Image>(out Image image);
+
+            if (image == null) return;
+
+            image.sprite = itemIcon;
+            //dark-gray overlay by default
+            image.color = SetOverlayOnSlotIcons("#858585");
 
         }
         private Color SetOverlayOnSlotIcons(string htmlValue)
@@ -176,20 +208,31 @@ namespace Player.UI
             if (characterInputHandler.isPauseButtonPressed)
             {
                 pauseMenuPanel.SetActive(true);
-                playerDataMono.playerState = PlayerState.Paused;
-                playerDataMono.playerStateStack.Add(playerDataMono.playerState);
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                StartPausedState();
+                SetCursorState(CursorLockMode.None, true);
             }
             else
             {
                 pauseMenuPanel.SetActive(false);
-                playerDataMono.playerStateStack.Remove(PlayerState.Paused);
-                playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
+                TerminatePausedState();
+                SetCursorState(CursorLockMode.Locked, false);
             }
 
+        }
+        private void StartPausedState()
+        {
+            playerDataMono.playerState = PlayerState.Paused;
+            playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+        }
+        private void TerminatePausedState()
+        {
+            playerDataMono.playerStateStack.Remove(PlayerState.Paused);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+        }
+        private void SetCursorState(CursorLockMode cursorLockMode, bool cursorVisibility)
+        {
+            Cursor.lockState = cursorLockMode;
+            Cursor.visible = cursorVisibility;
         }
         #endregion
 
@@ -212,6 +255,7 @@ namespace Player.UI
         {
             for (int i = 0; i < leaderboard.childCount; i++)
             {
+                //do not destroy first two row, they are title and attribute names
                 if (i == 0 || i == 1)
                     continue;
 

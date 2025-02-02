@@ -75,11 +75,6 @@ namespace GameModes.Common
 
             //We will start session only in the menu scene.
             //networkrunner prefab will survive on scene changes because it is 'dont destroy on load'
-            //This if block is created for test purpose
-            if(SceneManager.GetActiveScene().name != "MainMenu")
-            {
-                StartGame(networkRunner, GameMode.AutoHostOrClient, "Test", "IceWorld", 4);
-            }
             
         }
         #endregion
@@ -97,7 +92,8 @@ namespace GameModes.Common
 
         async void StartGame(NetworkRunner runner, GameMode gameMode, string roomName, string sceneName, int maxPlayers)
         {
-            ToggleStatusPanel();
+            ToggleStatusPanel();//loading on
+
             var sceneManager = GetSceneManager(runner);
             runner.ProvideInput = true;
 
@@ -111,7 +107,8 @@ namespace GameModes.Common
                 SessionProperties = sessionProps,
                 PlayerCount = maxPlayers
             });
-            ToggleStatusPanel();
+
+            ToggleStatusPanel();//loading off
             if (runner.IsServer)
             {
                 await runner.LoadScene(sceneName);
@@ -121,6 +118,7 @@ namespace GameModes.Common
         #endregion
 
         #region MENU_ACTIONS
+        //toggles loading animation screen
         private void ToggleStatusPanel()
         {
             if (menuLifeCycleHandler == null)
@@ -136,7 +134,9 @@ namespace GameModes.Common
         private async Task JoinLobby()
         {
             Debug.Log("Joining Lobby...");
-            ToggleStatusPanel();
+
+            ToggleStatusPanel();//loading on
+
             string lobbyName = "GameLobby";
             var result = await networkRunner.JoinSessionLobby(SessionLobby.Custom, lobbyName);
             if(!result.Ok)
@@ -147,7 +147,7 @@ namespace GameModes.Common
             else
             {
                 Debug.Log("joined lobby");
-                ToggleStatusPanel();
+                ToggleStatusPanel();//loading off
             }
         }
 
@@ -163,8 +163,6 @@ namespace GameModes.Common
                 StartGame(networkRunner, GameMode.Client, sessionInfo.Name, sceneName, sessionInfo.MaxPlayers);
         }
         #endregion
-
-
 
 
 

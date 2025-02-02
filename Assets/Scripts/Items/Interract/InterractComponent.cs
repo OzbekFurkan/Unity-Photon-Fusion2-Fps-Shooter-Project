@@ -6,7 +6,7 @@ using UnityEngine;
 using Fusion;
 using Player;
 using Player.Interract;
-using Player.UI;
+using Player.Utils;
 
 namespace Item.Interract
 {
@@ -90,7 +90,7 @@ namespace Item.Interract
 
             Transform weaponHolder = playerReferenceGetter.GetWeaponHolder();
 
-            parent.GetComponent<ItemSwitch>().SwitchSlot(itemDataMono.itemSlot);//change slot to which possessed item's slot is
+            parent.GetComponent<ItemSwitch>().SwitchSlot(itemDataMono.itemSlot);//change slot to possessed item's slot
             transform.SetParent(weaponHolder.GetChild(itemDataMono.itemSlot));
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(Vector3.zero);

@@ -4,7 +4,7 @@ using UnityEngine;
 using Fusion;
 using Fusion.Addons.SimpleKCC;
 using Player;
-using Player.UI;
+using Player.Utils;
 using Item.Interract;
 
 namespace Item

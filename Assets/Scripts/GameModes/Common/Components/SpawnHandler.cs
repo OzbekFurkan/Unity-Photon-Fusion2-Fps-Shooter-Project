@@ -60,7 +60,8 @@ namespace GameModes.Common
             else Debug.Log("OnPlayerJoined");
         }
 
-        private Vector3 GetSpawnPoint()
+        /// <summary>Returns a random spawn point. Team sensitive.</summary>
+        public Vector3 GetSpawnPoint()
         {
             if(selectedTeam == (int)Team.Soldier)
             {
@@ -76,7 +77,11 @@ namespace GameModes.Common
 
         public void PlayerLeft(PlayerRef player)
         {
-            
+            if(Runner.IsServer)
+            {
+                NetworkObject NO = Runner.GetPlayerObject(player);
+                Runner.Despawn(NO);
+            }
         }
     }
 }

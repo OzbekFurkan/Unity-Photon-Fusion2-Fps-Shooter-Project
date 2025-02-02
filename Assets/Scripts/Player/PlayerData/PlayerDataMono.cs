@@ -9,14 +9,23 @@ using Item;
 namespace Player
 {
     public enum PlayerState { Playing, Interacting, Reloading, Paused, Died}
+
     public class PlayerDataMono : ItemDataMono
     {
+        //scriptable object that hold various player data to be read
         [SerializeField] PlayerDataSettings playerDataSettings;
-        [HideInInspector] public PlayerState playerState = PlayerState.Playing;
-        [HideInInspector] public StateStack<PlayerState> playerStateStack = new StateStack<PlayerState>();
+
+        //player props to be assigned by player data settings (scriptable object)
         [HideInInspector] public byte HP;
         [HideInInspector] public Team team;
+
+        //needed for ui
         [Networked, HideInInspector] public ref PlayerDataStruct playerData => ref MakeRef<PlayerDataStruct>();
+
+        //player state
+        [HideInInspector] public PlayerState playerState = PlayerState.Playing;
+        //player state stack to store recent states
+        [HideInInspector] public StateStack<PlayerState> playerStateStack = new StateStack<PlayerState>();
 
         public void Awake()
         {

@@ -10,20 +10,22 @@ namespace Player.Inventory
 {
     public class InventoryManager : NetworkBehaviour
     {
-        [Networked, OnChangedRender(nameof(OnInventoryChanged))] public NetworkDictionary<int, NetworkId> inventory { get; } = new NetworkDictionary<int, NetworkId>();
-
-        public GameObject StartingWeapon;
-
+        [Header("Player References")]
         [SerializeField] private PlayerInterractManager PIM;
         [SerializeField] private HPHandler hpHandler;
         [SerializeField] private ItemSwitch itemSwitch;
         [SerializeField] private Transform weaponHolder;
 
+        [Networked, OnChangedRender(nameof(OnInventoryChanged))]
+        public NetworkDictionary<int, NetworkId> inventory { get; } = new NetworkDictionary<int, NetworkId>();
+
+        //our items should be dropped when our player is dead
         [Networked, OnChangedRender(nameof(OnPlayerDiedRemote))] NetworkBool isPlayerDied { get; set; }
 
         #region NETWORK_SYNC
         public void OnPlayerDiedRemote()
         {
+            //to make drop action visible for remote players, we should sync slot enable state
             if(isPlayerDied)
             {
                 for (int i = 0; i < weaponHolder.childCount; i++)
@@ -39,7 +41,7 @@ namespace Player.Inventory
 
         public override void Spawned()
         {
-            isPlayerDied = false;
+            isPlayerDied = false;//making sure isPlayerDead is false when player spawned
         }
         #endregion
 
@@ -53,28 +55,22 @@ namespace Player.Inventory
             inventory.Remove(itemId);
         }
 
-        /// <summary>
-        /// This method can be used to check if the slot is available while picking up an item.
-        /// </summary>
+        /// <summary>This method can be used to check if the slot is available while picking up an item.</summary>
         /// <param name="itemData">This object type must be derived from ItemDataMono class and casted into ItemDataMono class</param>
+        /// <param name="weaponHolder">weapon holder gameobject that holds all of our items by their slots</param>
         /// <returns>Returns true if the slot is available</returns>
         public bool SlotEmptyCheck(ItemDataMono itemData, GameObject weaponHolder)
         {
             return !(weaponHolder.transform.GetChild(itemData.itemSlot).childCount > 0);
         }
 
-        /// <summary>
-        /// Clears all items from inventory.
-        /// </summary>
+        /// <summary>Clears all items from inventory.</summary>
         public void ClearAllItems()
         {
             inventory.Clear();
         }
 
-        /// <summary>
-        /// Returns all items that possessed by player
-        /// </summary>
-        /// <returns></returns>
+        /// <summary>Returns all items that possessed by player</summary>
         public List<GameObject> GetAllItemObjects()
         {
             List<GameObject> items = new List<GameObject>();
@@ -130,6 +126,8 @@ namespace Player.Inventory
                 }
             }
         }
+
+        //Called from HpHandler script. It helps to drop all items when player died
         public void PlayerDied()
         {
             Debug.Log("died notification");
@@ -137,6 +135,7 @@ namespace Player.Inventory
             
 
         }
+        //This is used to stop trying to drop items
         public void PlayerRevived()
         {
             isPlayerDied = false;

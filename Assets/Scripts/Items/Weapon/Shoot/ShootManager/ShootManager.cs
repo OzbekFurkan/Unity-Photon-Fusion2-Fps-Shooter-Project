@@ -4,7 +4,7 @@ using UnityEngine;
 using Fusion;
 using Player;
 using Item.Interract;
-using Player.UI;
+using Player.Utils;
 
 namespace Item
 {

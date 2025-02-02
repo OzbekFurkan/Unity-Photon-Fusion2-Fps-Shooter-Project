@@ -16,7 +16,7 @@ namespace Player.Interract
         [Tooltip("The transform of the camera holder gameobject named camera handle"), SerializeField] private Transform cameraHandle;
         LayerMask layerMask;
 
-        [Header("Required Components")]
+        [Header("Required References")]
         [SerializeField] private InventoryManager inventoryManager;
         [SerializeField] private GameObject weaponHolder;
         [SerializeField] private ItemSwitch itemSwitch;
@@ -26,14 +26,14 @@ namespace Player.Interract
         #region NETWORK_SYNC
         public override void Spawned()
         {
-            if (Object.HasInputAuthority)
+            //new players should retrieve changes on rigidbody and collider state of the each interactable items in the scene
+            if (!Object.HasInputAuthority) return;
+
+            InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
+            foreach (InterractComponent item in allItems)
             {
-                InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
-                foreach (InterractComponent item in allItems)
-                {
-                    item.OnRigChange();
-                    item.OnColChange();
-                }
+                item.OnRigChange();
+                item.OnColChange();
             }
         }
         #endregion
@@ -41,8 +41,7 @@ namespace Player.Interract
         #region PICKUP_DROP_CHECK
         public override void FixedUpdateNetwork()
         {
-            if (!Object.HasInputAuthority)
-                return;
+            if (!Object.HasInputAuthority)  return;
 
             //getting input from network
             var input = GetInput<NetworkInputData>();
@@ -54,7 +53,7 @@ namespace Player.Interract
         {
             CheckPickup(input, previousButtons);
 
-            // Comparing current input buttons to previous input buttons - this prevents glitches when input is lost
+            //input check for dropping item
             if (input.Buttons.WasPressed(previousButtons, InputButton.Drop))
                 HandleDrop();
         }
@@ -66,13 +65,15 @@ namespace Player.Interract
             foreach (GameObject item in inventoryManager.GetAllItemObjects())
             {
                 InterractComponent interractComponent = item.GetComponent<InterractComponent>();
-                if (interractComponent.isItemActive)
-                {
-                    playerDataMono.playerState = PlayerState.Interacting;
-                    playerDataMono.playerStateStack.Add(playerDataMono.playerState);
-                    interractComponent.DropItemRpc();
-                    return;
-                }
+
+                //return if interact component is null
+                if (interractComponent == null) return;
+
+                //do not drop item if it is not our current item
+                if (interractComponent.isItemActive == false) return;
+
+                StartInteractingState();
+                interractComponent.DropItemRpc();
             }
         }
         #endregion
@@ -80,65 +81,64 @@ namespace Player.Interract
         #region PICKUP
         private void CheckPickup(NetworkInputData input, NetworkButtons previousButtons)
         {
-
+            //all pickupable items should be on Pickupable layer
             layerMask = LayerMask.GetMask("Pickupable");
+
+            //raycast to detect pickupable items
             bool isHit = Runner.LagCompensation.Raycast(cameraHandle.position, cameraHandle.forward, 3,
                 Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
-            if (isHit)
-            {
-                
-                if (detectedInfo.Collider == null)
-                    return;
 
-                detectedInfo.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
-                Debug.Log("component possesed " + detectedInfo.Collider.transform.root.name);
-                if (grabbedItem != null)
-                {
-                    if (grabbedItem.IsPickedUp)
-                        return;
-                        
-
-                    detectedInfo.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
-                    Debug.Log("slot availability: " + inventoryManager.SlotEmptyCheck(itemData, weaponHolder) + ": " + itemData.itemSlot);
-                    if (itemData != null && inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
-                    {
-                        //display item ui
-                        OpenItemUI(grabbedItem, itemData.itemName);
-
-                        //check input
-                        if (input.Buttons.WasPressed(previousButtons, InputButton.PickUp))
-                        {
-                            HandlePickup(grabbedItem);
-                            return;
-                        }
-                        
-                    }
-                    else if(itemData != null && !inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
-                    {
-                        //display item slot full
-                        OpenItemUI(grabbedItem, "Slot Full!");
-                        return;
-                    }
-                    else
-                    {
-                        //when item null
-                        CloseItemUI();
-                    }
-                }
-                else
-                {
-                    Debug.Log("null");
-                    //when item null
-                    CloseItemUI();
-                }
-
-                Debug.Log("nullll");
-                
-            }
-            else
+            //close item ui and return when no pickable item is hit
+            if(!isHit)
             {
                 CloseItemUI();
+                return;
             }
+
+            //collider check (just in case)
+            if (detectedInfo.Collider == null)  return;
+
+            //try to get interact component of hitted item
+            detectedInfo.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
+
+            //close item ui and return if there is no interact component
+            if (grabbedItem == null)
+            {
+                CloseItemUI();
+                return;
+            }
+
+            //return if the item we are trying to pick up is already picked up by someone else
+            if (grabbedItem.IsPickedUp) return;
+                        
+            //get the item data component to get the slot info of the item (we will check if it is available)
+            detectedInfo.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
+
+            //close item ui and return if there is no item data component
+            if (itemData == null)
+            {
+                CloseItemUI();
+                return;
+            }
+
+            //pick up item if the slot is available
+            if (inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
+            {
+                //display item ui
+                OpenItemUI(grabbedItem, itemData.itemName);
+
+                //check input
+                if (input.Buttons.WasPressed(previousButtons, InputButton.PickUp))
+                {
+                    HandlePickup(grabbedItem);
+                    return;
+                }
+            }
+
+            //display slot full warning on item ui if the slot is full
+            else if (!inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
+                OpenItemUI(grabbedItem, "Slot Full!");
+
         }
         private void CloseItemUI()
         {
@@ -146,30 +146,33 @@ namespace Player.Interract
             foreach (InterractComponent item in allItems)
             {
                 GameObject itemUI = item.GetItemUI();
+
                 if (itemUI != null)
-                {
                     itemUI.SetActive(false);
-                }
             }
         }
         private void OpenItemUI(InterractComponent grabbedItem, string message)
         {
+            //get item ui using interact component reference
             GameObject itemUI = grabbedItem.GetItemUI();
-            if(itemUI != null)
-            {
-                itemUI.SetActive(true);
-                itemUI.transform.LookAt(transform);
-                itemUI.transform.GetChild(0).gameObject.TryGetComponent<TextMeshProUGUI>(out TextMeshProUGUI itemNameText);
-                if(itemNameText != null)
-                {
-                    itemNameText.text = message;
-                }
-            }
+
+            //item ui null check
+            if (itemUI == null) return;
+
+            itemUI.SetActive(true);//enable item ui
+            itemUI.transform.LookAt(transform);//set its rotation toward our player
+
+            //try to get text ui element of grabbed item
+            itemUI.transform.GetChild(0).gameObject.TryGetComponent<TextMeshProUGUI>(out TextMeshProUGUI itemNameText);
+
+            //set the text if the text ui element is found
+            if(itemNameText != null)
+                itemNameText.text = message;
+                
         }
         private void HandlePickup(InterractComponent grabbedItem)
         {
-            playerDataMono.playerState = PlayerState.Interacting;
-            playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+            StartInteractingState();
             grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
         }
         #endregion
@@ -180,14 +183,31 @@ namespace Player.Interract
         {
             Debug.Log("pickup callback sent");
             inventoryManager.ItemPicked(itemId, networkId);
-            playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
-            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+            TerminateInteractingState();
         }
+
         [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority | RpcTargets.StateAuthority)]
         public void SendDropCallBackRpc(int itemId)
         {
             inventoryManager.ItemDropped(itemId);
+            TerminateInteractingState();
+        }
+        #endregion
+
+        #region STATE_ACTIONS
+        private void StartInteractingState()
+        {
+            //update player state as interacting
+            playerDataMono.playerState = PlayerState.Interacting;
+            //add current state into player state stack
+            playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+        }
+
+        private void TerminateInteractingState()
+        {
+            //remove interact state from stack
             playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
+            //get the last state from stack and update player state
             playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
         }
         #endregion

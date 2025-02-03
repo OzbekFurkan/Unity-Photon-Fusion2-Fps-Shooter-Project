@@ -657,11 +657,11 @@ MonoBehaviour:
   _HP: 0
   playerDataMono: {fileID: 4668899232703723864}
   itemSwitch: {fileID: 7171961804328239409}
-  uiOnHitColor: {r: 0.8962264, g: 0.2747864, b: 0.2747864, a: 0.9411765}
-  uiOnHitImage: {fileID: 0}
+  KCC: {fileID: 7339279321657204673}
+  inventoryManager: {fileID: 6863025440145560926}
+  weaponHolder: {fileID: 1627699624030451874}
   playerModel: {fileID: 6860565821398973337}
   deathGameObjectPrefab: {fileID: 4817986840635846212, guid: cee29fc4fd375c44588dfd4c0b0689d1, type: 3}
-  inventoryManager: {fileID: 6863025440145560926}
 --- !u!114 &6239717404664747632
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -698,9 +698,10 @@ MonoBehaviour:
   itemIcon: {fileID: 0}
   itemSlot: 0
   playerDataSettings: {fileID: 11400000, guid: ffdc8d8e5c4334f6eac45a5e56062112, type: 2}
-  playerState: 0
   HP: 0
   team: 0
+  startingHP: 0
+  playerState: 0
 --- !u!114 &6863025440145560926
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -713,13 +714,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31eb9b41a9fda4d9bbb10f91fd14a7b7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _inventory:
-    _items: []
-  StartingWeapon: {fileID: 2379902543376957109, guid: fc9c47ef068abce44afbb23a75a3d1c0, type: 3}
   PIM: {fileID: 6239717404664747632}
   hpHandler: {fileID: 2236272646455254436}
   itemSwitch: {fileID: 7171961804328239409}
   weaponHolder: {fileID: 1627699624030451874}
+  _inventory:
+    _items: []
 --- !u!114 &7171961804328239409
 MonoBehaviour:
   m_ObjectHideFlags: 0

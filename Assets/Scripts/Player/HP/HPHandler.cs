@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using Fusion.Addons.SimpleKCC;
 using UnityEngine.UI;
 using GameModes.Common;
 using GameModes.Modes;
@@ -15,30 +16,22 @@ namespace Player
         ChangeDetector changeDetector;
         [Networked]
         public bool isDead { get; set; }
-        [Networked]
+        [Networked, OnChangedRender(nameof(OnHPChanged))]
         public byte HP { get; set; }//runtime hp value
 
-        [Header("Player Datas")]
+        [Header("Player References")]
         [SerializeField] PlayerDataMono playerDataMono;
         [SerializeField] ItemSwitch itemSwitch;
-        byte startingHP;//it is used when player respawned
-        bool isInitialized = false;
-
-        [Header("Killer Datas")]
-        PlayerRef killerPlayer;
-        GameObject killerGameObject;
-
-        [Header("Effects")]
-        public GameObject playerModel;//our model will be invisivle when died and will be visible when revieved
-        public GameObject deathGameObjectPrefab;//particle effect to play when died
-        
-
-        [Header("Other Components")]
+        [SerializeField] SimpleKCC KCC;
+        [SerializeField] InventoryManager inventoryManager;
+        [SerializeField] Transform weaponHolder;
         HitboxRoot hitboxRoot;
         CharacterMovementHandler characterMovementHandler;
-        [SerializeField] InventoryManager inventoryManager;
+        
 
-
+        [Header("Effects")]
+        public GameObject playerModel;//our model will be invisible when died and will be visible when revieved
+        public GameObject deathGameObjectPrefab;//particle effect to play when died
 
         private void Awake()
         {
@@ -46,19 +39,34 @@ namespace Player
             hitboxRoot = GetComponentInChildren<HitboxRoot>();
         }
 
-        // Start is called before the first frame update
-        void Start()
-        {
-            isDead = false;
-
-            isInitialized = true;
-        }
         public override void Spawned()
         {
             changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-            startingHP = playerDataMono.HP;
-            HP = playerDataMono.HP;
-            Debug.Log(HP + " " + playerDataMono.HP);
+            isDead = false;
+            HP = playerDataMono.startingHP;
+        }
+
+        public override void FixedUpdateNetwork()
+        {
+            //read networked hp and assign it to player data hp
+            playerDataMono.HP = HP;
+
+            //Check if we've fallen off the world.
+            CheckFallRespawn();
+        }
+
+        void CheckFallRespawn()
+        {
+            if (transform.position.y < -10)
+            {
+                if (Object.HasStateAuthority)
+                {
+                    Debug.Log($"{Time.time} Respawn due to fall outside of map at position {transform.position}");
+
+                    Respawn();
+                }
+
+            }
         }
 
         public override void Render()
@@ -67,12 +75,6 @@ namespace Player
             {
                 switch (change)
                 {
-                    case nameof(HP):
-                        var hpReader = GetPropertyReader<byte>(nameof(HP));
-                        var (oldHP, newHP) = hpReader.Read(prev, current);
-                        OnHPChanged(oldHP, newHP);
-                        break;
-
                     case nameof(isDead):
                         var stateReader = GetPropertyReader<bool>(nameof(isDead));
                         var (isDeadOld, isDeadCurrent) = stateReader.Read(prev, current);
@@ -83,30 +85,20 @@ namespace Player
         }
 
         #region HP_REDUCED_REMOTE
-        public void OnHPChanged(byte oldHP, byte newHP)
+        public void OnHPChanged()
         {
-            Debug.Log($"{Time.time} OnHPChanged value {newHP} : " + HP);
-            HP = newHP;
-            //Check if the HP has been decreased
-            if (newHP < oldHP)
-                OnHPReduced();
+            Debug.Log($"{Time.time} OnHPChanged value :" + HP);
+            playerDataMono.HP = HP;
         }
-        private void OnHPReduced()
-        {
-            if (!isInitialized)
-                return;
-        }
-
         #endregion
 
         #region DEAD_STATE_REMOTE
         public void OnStateChanged(bool isDeadOld, bool isDeadCurrent)
         {
-            Debug.Log($"{Time.time} OnStateChanged isDead {isDeadCurrent}");
-
             //Handle on death for the player. Also check if the player was dead but is now alive in that case revive the player.
             if (isDeadCurrent)
                 OnDeath();
+
             else if (!isDeadCurrent && isDeadOld)
                 OnRevive();
         }
@@ -117,26 +109,19 @@ namespace Player
             playerModel.gameObject.SetActive(false);
             hitboxRoot.HitboxRootActive = false;
             characterMovementHandler.SetCharacterControllerEnabled(false);
-            Instantiate(deathGameObjectPrefab, transform.position, Quaternion.identity);
 
-            //Öldü bilgisi ile inventory managerda metod çağıracak.
-            inventoryManager.PlayerDied();
+            for (int i = 0; i < weaponHolder.childCount; i++)
+                weaponHolder.GetChild(i).gameObject.SetActive(true);
+
+            Instantiate(deathGameObjectPrefab, transform.position, Quaternion.identity);
         }
         private void OnRevive()
         {
             Debug.Log($"{Time.time} OnRevive");
 
-            if (Object.HasInputAuthority)
-            {
-                //uiOnHitImage.color = new Color(0, 0, 0, 0);
-            }
-                
-
             playerModel.gameObject.SetActive(true);
             hitboxRoot.HitboxRootActive = true;
             characterMovementHandler.SetCharacterControllerEnabled(true);
-
-            inventoryManager.PlayerRevived();
         }
         #endregion
 
@@ -144,65 +129,114 @@ namespace Player
         //This function is called by other players and the changes in the hp value is handled above
         //Function only called on the server
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void OnTakeDamageRpc(PlayerRef shooter, NetworkId shooterNetworkId, byte damage)
+        public void OnTakeDamageRpc(NetworkId shooterNetworkId, byte damage)
         {
             //Only take damage while alive
-            if (isDead)
-                return;
+            if (isDead) return;
 
-            HP -= damage;
-            playerDataMono.HP-=damage;
+            HP -= damage;//damage taken
+
             Debug.Log($"{Time.time} {transform.name} took damage got {HP} left ");
 
-            //Player died
-            if (HP <= 0 || HP >100)
-            {
-                Debug.Log($"{Time.time} {transform.name} died");
+            //Player not died
+            if (HP > 0 && HP <= 100) return;
 
-                killerPlayer = shooter;
-                //leaderboard
-                killerGameObject = Runner.FindObject(shooterNetworkId).gameObject;
-                killerGameObject.GetComponent<PlayerDataMono>()?.AddKill();
-                playerDataMono.AddDeath();
-                //killtable
-                GameObject.FindAnyObjectByType<KillTableManager>()?.AddRawToKilltableRpc(
-                killerGameObject.GetComponent<PlayerDataMono>()?.GetUsername(),
-                playerDataMono.GetUsername());
-                //team score for deathmatch
-                GameObject.FindAnyObjectByType<Deathmatch>()?.UpdateTeamScoresRpc(playerDataMono.playerData.team);
+            //player died
+            isDead = true;
 
-                isDead = true;
-                StartCoroutine(ServerReviveCO());
-            }
+            Debug.Log($"{Time.time} {transform.name} died");
+
+            //get killer gameobject by killer network id
+            GameObject killerGameObject = Runner.FindObject(shooterNetworkId).gameObject;
+
+            //null check
+            if (killerGameObject == null) return;
+
+            //get killer player data component
+            PlayerDataMono killerPlayerData = killerGameObject.GetComponent<PlayerDataMono>();
+
+            //player data null check
+            if (killerPlayerData == null) return;
+
+            //leaderboard
+            killerPlayerData.AddKill();//increase killer's kill counter
+            playerDataMono.AddDeath();//increase death player's death counter
+
+            //killtable
+            GameObject.FindAnyObjectByType<KillTableManager>()?.AddRawToKilltableRpc(
+                killerPlayerData.GetUsername(), playerDataMono.GetUsername());
+
+            //team score for deathmatch
+            GameObject.FindAnyObjectByType<Deathmatch>()?.UpdateTeamScoresRpc(killerPlayerData.playerData.team);
+
+            //respawn request
+            StartCoroutine(RequestRespawn());
         }
 
-        IEnumerator ServerReviveCO()
+        private void StartDiedState()
         {
             playerDataMono.playerState = PlayerState.Died;
             playerDataMono.playerStateStack.Add(playerDataMono.playerState);
+        }
+        private void ResetPlayerState()
+        {
+            playerDataMono.playerStateStack.Remove(PlayerState.Died);
+            playerDataMono.playerStateStack.Remove(PlayerState.Reloading);
+            playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+        }
+
+        IEnumerator RequestRespawn()
+        {
+
+            StartDiedState();
 
             yield return new WaitForSeconds(2.0f);
 
-            characterMovementHandler.RequestRespawn();
+            Respawn();
+        }
+
+        private void Respawn()
+        {
+            SpawnHandler _spawnHandler = FindObjectOfType<SpawnHandler>();
+
+            if (_spawnHandler == null) return;
+
+            Team team = playerDataMono.team;
+
+            if (team == Team.Soldier)
+                MovePlayerToSpawnPoint(_spawnHandler.soldierSpawnPointContainer);
+
+            else
+                MovePlayerToSpawnPoint(_spawnHandler.alienSpawnPointContainer);
+
+
+            OnRespawned();
+        }
+
+        private void MovePlayerToSpawnPoint(Transform spawnPointContainer)
+        {
+            int pointAmount = spawnPointContainer.childCount;
+
+            int randomPointIndex = Random.Range(0, pointAmount);
+
+            Vector3 spawnPoint = spawnPointContainer.GetChild(randomPointIndex).position;
+
+            KCC.SetPosition(spawnPoint);
         }
 
         public void OnRespawned()
         {
             //Reset variables
-            playerDataMono.playerStateStack.Remove(PlayerState.Died);
-            playerDataMono.playerStateStack.Remove(PlayerState.Reloading);
-            playerDataMono.playerStateStack.Remove(PlayerState.Interacting);
-            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
+            ResetPlayerState();
 
-            HP = startingHP;
+            HP = playerDataMono.startingHP;
 
             isDead = false;
 
             playerModel.gameObject.SetActive(true);
             hitboxRoot.HitboxRootActive = true;
             characterMovementHandler.SetCharacterControllerEnabled(true);
-
-            inventoryManager.PlayerRevived();
 
             itemSwitch.SwitchSlot(itemSwitch.currentSlot);
         }

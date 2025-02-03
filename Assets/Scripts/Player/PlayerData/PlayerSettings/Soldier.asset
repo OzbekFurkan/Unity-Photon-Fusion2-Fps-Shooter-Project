@@ -19,3 +19,4 @@ MonoBehaviour:
   itemIcon: {fileID: 21300000, guid: 92c0b4962d0664542ad45b269628ad07, type: 3}
   team: 0
   HP: 100
+  startingHP: 100

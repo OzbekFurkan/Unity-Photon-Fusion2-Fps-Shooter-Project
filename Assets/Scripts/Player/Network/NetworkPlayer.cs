@@ -37,10 +37,6 @@ namespace Player
                 //Disable the minimap camera if we are not the local player
                 minimapCamera.enabled = false;
 
-                //Only 1 audio listner is allowed in the scene so disable remote players audio listner
-                AudioListener audioListener = GetComponentInChildren<AudioListener>();
-                audioListener.enabled = false;
-
                 Debug.Log("Spawned remote player");
             }
 

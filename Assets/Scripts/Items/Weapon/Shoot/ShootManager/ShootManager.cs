@@ -129,9 +129,8 @@ namespace Item
                 Debug.Log($"{Time.time} {transform.name} hit hitbox {hitinfo.Hitbox.transform.root.name}");
 
                 if(Object.HasStateAuthority)
-                    hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamageRpc(Object.InputAuthority,
-                        interractComponent.Owner.Id,
-                        weaponDataMono.weaponShootSettings.hitDamage);
+                    hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamageRpc(interractComponent.Owner.Id,
+                                                                                weaponDataMono.weaponShootSettings.hitDamage);
 
             }
             //something else hit

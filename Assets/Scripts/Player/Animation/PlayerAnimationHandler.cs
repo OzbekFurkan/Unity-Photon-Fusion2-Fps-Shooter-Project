@@ -32,12 +32,11 @@ namespace Player
 
         public override void FixedUpdateNetwork()
         {
-            if(Object.HasInputAuthority)
-            {
-                SetParameterVariables();
-                SetAnimatorParameters();
-                SetHandsOnItem();//consider place this method call outside the if block
-            }
+            
+            SetParameterVariables();
+            SetAnimatorParameters();
+            SetHandsOnItem();
+            
         }
 
         #region SET_ANIMATION_PARAMETERS

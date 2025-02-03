@@ -61,7 +61,7 @@ namespace Player.UI
 
             SetAmmoText();
             SetHpBarSlider();
-            ShowHitEffectOnHit();
+            //ShowHitEffectOnHit();
             SetSlotUI();
 
             HandleInput();

@@ -10,8 +10,6 @@ namespace Player
 {
     public class CharacterMovementHandler : NetworkBehaviour
     {
-        bool isRespawnRequested = false;
-
         [Header("Movement Setup")]
         public float JumpImpulse = 5f;
         public float MovementSpeed = 8.0f;
@@ -32,11 +30,6 @@ namespace Player
         {
             if (Object.HasStateAuthority)
             {
-                if (isRespawnRequested)
-                {
-                    Respawn();
-                    return;
-                }
 
                 //Don't update the clients position when they are dead
                 if (hpHandler.isDead)
@@ -66,41 +59,6 @@ namespace Player
             }
 
             KCC.Move(moveDirection * MovementSpeed, jumpImpulse);
-
-            //Check if we've fallen off the world.
-            CheckFallRespawn();
-        }
-
-        void CheckFallRespawn()
-        {
-            if (transform.position.y < -12)
-            {
-                if (Object.HasStateAuthority)
-                {
-                    Debug.Log($"{Time.time} Respawn due to fall outside of map at position {transform.position}");
-
-                    Respawn();
-                }
-
-            }
-        }
-
-        public void RequestRespawn()
-        {
-            isRespawnRequested = true;
-        }
-
-        void Respawn()
-        {
-            SpawnHandler _spawnHandler = FindObjectOfType<SpawnHandler>();
-            if(_spawnHandler != null)
-                KCC.Move((playerData.team == Team.Soldier)?
-                    _spawnHandler.soldierSpawnPointContainer.GetChild(_spawnHandler.soldierSpawnPointContainer.childCount-1).position:
-                    _spawnHandler.alienSpawnPointContainer.GetChild(_spawnHandler.alienSpawnPointContainer.childCount - 1).position);
-
-            hpHandler.OnRespawned();
-
-            isRespawnRequested = false;
         }
 
         public void SetCharacterControllerEnabled(bool isEnabled)

@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
+using Utilitiy;
 using Player;
 using Player.Interract;
 using Player.Utils;
@@ -101,8 +102,7 @@ namespace Item.Interract
         [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
         public void DropItemRpc()
         {
-            if (!IsPickedUp || !isItemActive || !isDropComplete)
-                return;
+            if (!IsPickedUp || !isItemActive || !isDropComplete) return;
 
             isDropComplete = false;
             ResetItemProps();
@@ -116,7 +116,7 @@ namespace Item.Interract
         {
             IsPickedUp = false;
             Owner = null;
-            transform.SetParent(null);
+            transform.SetParent(FindObjectOfType<ParentSyncInScene>().transform);
             isItemActive = false;
             itemRigidbody.isKinematic = false;
             isKinematicRig = false;

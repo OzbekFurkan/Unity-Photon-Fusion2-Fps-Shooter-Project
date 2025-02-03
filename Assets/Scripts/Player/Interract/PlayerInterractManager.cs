@@ -41,8 +41,6 @@ namespace Player.Interract
         #region PICKUP_DROP_CHECK
         public override void FixedUpdateNetwork()
         {
-            if (!Object.HasInputAuthority)  return;
-
             //getting input from network
             var input = GetInput<NetworkInputData>();
             ProcessInput(input.GetValueOrDefault(), _input.PreviousButtons);
@@ -83,7 +81,7 @@ namespace Player.Interract
         {
             //all pickupable items should be on Pickupable layer
             layerMask = LayerMask.GetMask("Pickupable");
-
+            Debug.Log("1");
             //raycast to detect pickupable items
             bool isHit = Runner.LagCompensation.Raycast(cameraHandle.position, cameraHandle.forward, 3,
                 Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
@@ -91,41 +89,41 @@ namespace Player.Interract
             //close item ui and return when no pickable item is hit
             if(!isHit)
             {
-                CloseItemUI();
+                CloseItemUI_Wrapper();
                 return;
             }
-
+            Debug.Log("2");
             //collider check (just in case)
             if (detectedInfo.Collider == null)  return;
-
+            Debug.Log("3");
             //try to get interact component of hitted item
-            detectedInfo.Collider.transform.root.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
-
+            detectedInfo.Collider.transform.parent.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
+            
             //close item ui and return if there is no interact component
             if (grabbedItem == null)
             {
-                CloseItemUI();
+                CloseItemUI_Wrapper();
                 return;
             }
-
+            Debug.Log("4");
             //return if the item we are trying to pick up is already picked up by someone else
             if (grabbedItem.IsPickedUp) return;
-                        
+            Debug.Log("5");
             //get the item data component to get the slot info of the item (we will check if it is available)
-            detectedInfo.Collider.transform.root.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
+            detectedInfo.Collider.transform.parent.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
 
             //close item ui and return if there is no item data component
             if (itemData == null)
             {
-                CloseItemUI();
+                CloseItemUI_Wrapper();
                 return;
             }
-
+            Debug.Log("6");
             //pick up item if the slot is available
             if (inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
             {
                 //display item ui
-                OpenItemUI(grabbedItem, itemData.itemName);
+                OpenItemUI_Wrapper(grabbedItem, itemData.itemName);
 
                 //check input
                 if (input.Buttons.WasPressed(previousButtons, InputButton.PickUp))
@@ -137,11 +135,23 @@ namespace Player.Interract
 
             //display slot full warning on item ui if the slot is full
             else if (!inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
-                OpenItemUI(grabbedItem, "Slot Full!");
+                OpenItemUI_Wrapper(grabbedItem, "Slot Full!");
+
+        }
+        private void CloseItemUI_Wrapper()
+        {
+            if(Object.HasStateAuthority && Object.HasInputAuthority)
+            {
+                CloseItemUI();
+                return;
+            }
+
+            else if(Object.HasStateAuthority)
+                CloseItemUI_RPC();
 
         }
         private void CloseItemUI()
-        {
+        {       
             InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
             foreach (InterractComponent item in allItems)
             {
@@ -150,6 +160,22 @@ namespace Player.Interract
                 if (itemUI != null)
                     itemUI.SetActive(false);
             }
+        }
+        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority)]
+        private void CloseItemUI_RPC()
+        {
+            CloseItemUI();
+        }
+        private void OpenItemUI_Wrapper(InterractComponent grabbedItem, string message)
+        {
+            if (Object.HasStateAuthority && Object.HasInputAuthority)
+            {
+                OpenItemUI(grabbedItem, message);
+                return;
+            }
+            else if (Object.HasStateAuthority)
+                OpenItemUI_RPC(grabbedItem, message);
+
         }
         private void OpenItemUI(InterractComponent grabbedItem, string message)
         {
@@ -169,6 +195,12 @@ namespace Player.Interract
             if(itemNameText != null)
                 itemNameText.text = message;
                 
+        }
+        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority)]
+        private void OpenItemUI_RPC(InterractComponent grabbedItem, string message)
+        {
+            OpenItemUI(grabbedItem, message);
+
         }
         private void HandlePickup(InterractComponent grabbedItem)
         {

@@ -18,6 +18,7 @@ namespace Player
         //player props to be assigned by player data settings (scriptable object)
         [HideInInspector] public byte HP;
         [HideInInspector] public Team team;
+        [HideInInspector] public byte startingHP;
 
         //needed for ui
         [Networked, HideInInspector] public ref PlayerDataStruct playerData => ref MakeRef<PlayerDataStruct>();
@@ -37,6 +38,7 @@ namespace Player
             
             HP = playerDataSettings.HP;
             team = playerDataSettings.team;
+            startingHP = playerDataSettings.startingHP;
             playerStateStack.Add(playerState);
         }
         protected override void SetBaseProps(string itemName, int itemId, GameObject itemPrefab, Sprite itemIcon, int itemSlot)

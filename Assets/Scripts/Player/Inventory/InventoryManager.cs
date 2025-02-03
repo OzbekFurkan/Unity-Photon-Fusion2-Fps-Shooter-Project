@@ -19,29 +19,10 @@ namespace Player.Inventory
         [Networked, OnChangedRender(nameof(OnInventoryChanged))]
         public NetworkDictionary<int, NetworkId> inventory { get; } = new NetworkDictionary<int, NetworkId>();
 
-        //our items should be dropped when our player is dead
-        [Networked, OnChangedRender(nameof(OnPlayerDiedRemote))] NetworkBool isPlayerDied { get; set; }
-
         #region NETWORK_SYNC
-        public void OnPlayerDiedRemote()
-        {
-            //to make drop action visible for remote players, we should sync slot enable state
-            if(isPlayerDied)
-            {
-                for (int i = 0; i < weaponHolder.childCount; i++)
-                {
-                    weaponHolder.GetChild(i).gameObject.SetActive(true);
-                }
-            }
-        }
         public void OnInventoryChanged()
         {
             DisplayInventory();
-        }
-
-        public override void Spawned()
-        {
-            isPlayerDied = false;//making sure isPlayerDead is false when player spawned
         }
         #endregion
 
@@ -106,39 +87,25 @@ namespace Player.Inventory
         }
         public override void FixedUpdateNetwork()
         {
-            if (isPlayerDied)
+            if (hpHandler.isDead == false) return;
+
+
+            for (int i = 0; i < weaponHolder.childCount; i++)
             {
-                for (int i = 0; i < weaponHolder.childCount; i++)
-                {
-                    weaponHolder.GetChild(i).gameObject.SetActive(true);
-                    if (weaponHolder.GetChild(i).childCount > 0)
-                    {
-                        GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
-                        item.TryGetComponent<InterractComponent>(out var interractComponent);
-                        if (interractComponent)
-                        {
-                            interractComponent.isItemActive = true;
-                            interractComponent.DropItemRpc();
-                        }
+                weaponHolder.GetChild(i).gameObject.SetActive(true);
 
-                    }
+                if (weaponHolder.GetChild(i).childCount <= 0) return;
 
-                }
+                GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
+                item.TryGetComponent<InterractComponent>(out var interactComponent);
+
+                if (interactComponent == null) return;
+
+                interactComponent.isItemActive = true;
+                interactComponent.DropItemRpc();
+
             }
-        }
 
-        //Called from HpHandler script. It helps to drop all items when player died
-        public void PlayerDied()
-        {
-            Debug.Log("died notification");
-            isPlayerDied = true;
-            
-
-        }
-        //This is used to stop trying to drop items
-        public void PlayerRevived()
-        {
-            isPlayerDied = false;
         }
         #endregion
     }

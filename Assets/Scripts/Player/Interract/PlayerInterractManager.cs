@@ -31,10 +31,7 @@ namespace Player.Interract
 
             InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
             foreach (InterractComponent item in allItems)
-            {
-                item.OnRigChange();
-                item.OnColChange();
-            }
+                item.OnPickUpStateChange();
         }
         #endregion
 
@@ -65,13 +62,15 @@ namespace Player.Interract
                 InterractComponent interractComponent = item.GetComponent<InterractComponent>();
 
                 //return if interact component is null
-                if (interractComponent == null) return;
+                if (interractComponent == null) continue;
 
                 //do not drop item if it is not our current item
-                if (interractComponent.isItemActive == false) return;
+                if (interractComponent.isItemActive == false) continue;
 
                 StartInteractingState();
                 interractComponent.DropItemRpc();
+
+                return;//drop only one item at once
             }
         }
         #endregion
@@ -81,7 +80,7 @@ namespace Player.Interract
         {
             //all pickupable items should be on Pickupable layer
             layerMask = LayerMask.GetMask("Pickupable");
-            Debug.Log("1");
+            
             //raycast to detect pickupable items
             bool isHit = Runner.LagCompensation.Raycast(cameraHandle.position, cameraHandle.forward, 3,
                 Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
@@ -89,41 +88,41 @@ namespace Player.Interract
             //close item ui and return when no pickable item is hit
             if(!isHit)
             {
-                CloseItemUI_Wrapper();
+                CloseItemUI();
                 return;
             }
-            Debug.Log("2");
+            
             //collider check (just in case)
             if (detectedInfo.Collider == null)  return;
-            Debug.Log("3");
+            
             //try to get interact component of hitted item
             detectedInfo.Collider.transform.parent.gameObject.TryGetComponent<InterractComponent>(out var grabbedItem);
             
             //close item ui and return if there is no interact component
             if (grabbedItem == null)
             {
-                CloseItemUI_Wrapper();
+                CloseItemUI();
                 return;
             }
-            Debug.Log("4");
+            
             //return if the item we are trying to pick up is already picked up by someone else
             if (grabbedItem.IsPickedUp) return;
-            Debug.Log("5");
+            
             //get the item data component to get the slot info of the item (we will check if it is available)
             detectedInfo.Collider.transform.parent.gameObject.TryGetComponent<ItemDataMono>(out var itemData);
 
             //close item ui and return if there is no item data component
             if (itemData == null)
             {
-                CloseItemUI_Wrapper();
+                CloseItemUI();
                 return;
             }
-            Debug.Log("6");
+            
             //pick up item if the slot is available
             if (inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
             {
                 //display item ui
-                OpenItemUI_Wrapper(grabbedItem, itemData.itemName);
+                OpenItemUI(grabbedItem, itemData.itemName, detectedInfo.Point);
 
                 //check input
                 if (input.Buttons.WasPressed(previousButtons, InputButton.PickUp))
@@ -135,23 +134,13 @@ namespace Player.Interract
 
             //display slot full warning on item ui if the slot is full
             else if (!inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
-                OpenItemUI_Wrapper(grabbedItem, "Slot Full!");
-
-        }
-        private void CloseItemUI_Wrapper()
-        {
-            if(Object.HasStateAuthority && Object.HasInputAuthority)
-            {
-                CloseItemUI();
-                return;
-            }
-
-            else if(Object.HasStateAuthority)
-                CloseItemUI_RPC();
+                OpenItemUI(grabbedItem, "Slot Full!", detectedInfo.Point);
 
         }
         private void CloseItemUI()
-        {       
+        {
+            if (!Object.HasInputAuthority) return;
+
             InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
             foreach (InterractComponent item in allItems)
             {
@@ -161,24 +150,10 @@ namespace Player.Interract
                     itemUI.SetActive(false);
             }
         }
-        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority)]
-        private void CloseItemUI_RPC()
+        private void OpenItemUI(InterractComponent grabbedItem, string message, Vector3 hitPoint)
         {
-            CloseItemUI();
-        }
-        private void OpenItemUI_Wrapper(InterractComponent grabbedItem, string message)
-        {
-            if (Object.HasStateAuthority && Object.HasInputAuthority)
-            {
-                OpenItemUI(grabbedItem, message);
-                return;
-            }
-            else if (Object.HasStateAuthority)
-                OpenItemUI_RPC(grabbedItem, message);
+            if (!Object.HasInputAuthority) return;
 
-        }
-        private void OpenItemUI(InterractComponent grabbedItem, string message)
-        {
             //get item ui using interact component reference
             GameObject itemUI = grabbedItem.GetItemUI();
 
@@ -186,7 +161,8 @@ namespace Player.Interract
             if (itemUI == null) return;
 
             itemUI.SetActive(true);//enable item ui
-            itemUI.transform.LookAt(transform);//set its rotation toward our player
+            itemUI.transform.position = new Vector3(hitPoint.x, cameraHandle.transform.position.y-0.5f, hitPoint.z);
+            itemUI.transform.LookAt(cameraHandle);//set its rotation toward our player
 
             //try to get text ui element of grabbed item
             itemUI.transform.GetChild(0).gameObject.TryGetComponent<TextMeshProUGUI>(out TextMeshProUGUI itemNameText);
@@ -195,12 +171,6 @@ namespace Player.Interract
             if(itemNameText != null)
                 itemNameText.text = message;
                 
-        }
-        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority)]
-        private void OpenItemUI_RPC(InterractComponent grabbedItem, string message)
-        {
-            OpenItemUI(grabbedItem, message);
-
         }
         private void HandlePickup(InterractComponent grabbedItem)
         {

@@ -15,10 +15,10 @@ namespace Item.Interract
     {
         [Header("Network Related Variables")]
         private GameObject parentPlayerObject;
-        [Networked, HideInInspector] public bool IsPickedUp { get; set; }
+        [Networked, HideInInspector, OnChangedRender(nameof(OnPickUpStateChange))] public bool IsPickedUp { get; set; }
         [HideInInspector][Networked] public NetworkObject Owner { get; set; }
-        [Networked, HideInInspector, OnChangedRender(nameof(OnRigChange))] public bool isKinematicRig { get; set; }
-        [Networked, HideInInspector, OnChangedRender(nameof(OnColChange))] public bool isTriggerCol { get; set; }
+        [Networked, HideInInspector] public bool isKinematicRig { get; set; }
+        [Networked, HideInInspector] public bool isTriggerCol { get; set; }
         [Networked, HideInInspector] public bool isItemActive { get; set; }//is it our current item
 
         [Header("Components")]
@@ -32,14 +32,9 @@ namespace Item.Interract
 
 
         #region NETWORK_SYNC
-        public void OnRigChange()
+        public void OnPickUpStateChange()
         {
-             Debug.Log("iskinematic: " + isKinematicRig);
-             itemRigidbody.isKinematic = isKinematicRig;
-        }
-        public void OnColChange()
-        {
-            Debug.Log("iscollider: " + isTriggerCol);
+            itemRigidbody.isKinematic = isKinematicRig;
             boxCollider.isTrigger = isTriggerCol;
         }
         public override void Spawned()

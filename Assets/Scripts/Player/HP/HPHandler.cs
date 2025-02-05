@@ -27,7 +27,6 @@ namespace Player
         [SerializeField] Transform weaponHolder;
         HitboxRoot hitboxRoot;
         CharacterMovementHandler characterMovementHandler;
-        
 
         [Header("Effects")]
         public GameObject playerModel;//our model will be invisible when died and will be visible when revieved
@@ -209,7 +208,6 @@ namespace Player
 
             else
                 MovePlayerToSpawnPoint(_spawnHandler.alienSpawnPointContainer);
-
 
             OnRespawned();
         }

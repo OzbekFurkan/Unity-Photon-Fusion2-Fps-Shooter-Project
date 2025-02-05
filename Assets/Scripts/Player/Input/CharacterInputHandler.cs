@@ -34,9 +34,6 @@ namespace Player
 
         private NetworkInputData _networkInput;
 
-        //this variable assigned in ShootManager and decides whether the shooting proccess will be in auto mode ore not
-        public bool isAuto;
-
         //PlayerUI
         //Needed for ui implementation in common ui (PlayerUIController)
         [HideInInspector] public bool isLeaderboardButtonPressed;
@@ -104,7 +101,7 @@ namespace Player
                 isPauseButtonPressed = !isPauseButtonPressed;
             _networkInput.Buttons.Set(InputButton.Pause, isPauseButtonPressed);
 
-            //no movement or action allowed when paused
+            //no movement or action allowed when paused. This should be under pause key check in order to be able to resume the game
             if (playerDataMono.playerState == PlayerState.Paused)
                 return;
 

@@ -261,12 +261,6 @@ namespace Item
                     Quaternion.Euler(Vector3.zero),
                     weaponDataMono.weaponShootSettings.recoilSpeed);
             }
-
-            if(GetComponent<InterractComponent>().isItemActive)
-            {
-                if(Player.NetworkPlayer.Local)
-                    Player.NetworkPlayer.Local.GetComponent<CharacterInputHandler>().isAuto = weaponDataMono.weaponShootSettings.isAuto;
-            }
         }
         #endregion
 

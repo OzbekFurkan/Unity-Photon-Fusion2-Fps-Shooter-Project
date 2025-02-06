@@ -5,6 +5,7 @@ using Fusion;
 using Player.Inventory;
 using Item.Interract;
 using Item;
+using Item.Utils;
 using TMPro;
 using UnityEngine.UI;
 
@@ -144,7 +145,11 @@ namespace Player.Interract
             InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
             foreach (InterractComponent item in allItems)
             {
-                GameObject itemUI = item.GetItemUI();
+                ItemReferenceGetter itemReferenceGetter = item.gameObject.GetComponent<ItemReferenceGetter>();
+
+                if (itemReferenceGetter == null) return;
+
+                GameObject itemUI = itemReferenceGetter.ItemUiGetter();
 
                 if (itemUI != null)
                     itemUI.SetActive(false);
@@ -154,8 +159,12 @@ namespace Player.Interract
         {
             if (!Object.HasInputAuthority) return;
 
-            //get item ui using interact component reference
-            GameObject itemUI = grabbedItem.GetItemUI();
+            //get item ui using item reference getter component reference
+            ItemReferenceGetter itemReferenceGetter = grabbedItem.gameObject.GetComponent<ItemReferenceGetter>();
+
+            if (itemReferenceGetter == null) return;
+
+            GameObject itemUI = itemReferenceGetter.ItemUiGetter();
 
             //item ui null check
             if (itemUI == null) return;

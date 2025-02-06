@@ -195,6 +195,7 @@ GameObject:
   - component: {fileID: 7519246207031696649}
   - component: {fileID: 7481570533478448748}
   - component: {fileID: 778467918105699154}
+  - component: {fileID: 6671130654216905509}
   m_Layer: 7
   m_Name: Famas
   m_TagString: IgnoreLayerChange
@@ -246,6 +247,7 @@ MonoBehaviour:
   - {fileID: 2831380193057120408}
   - {fileID: 7519246207031696649}
   - {fileID: 778467918105699154}
+  ForceRemoteRenderTimeframe: 0
 --- !u!114 &2562991662950299677
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -292,12 +294,11 @@ MonoBehaviour:
   itemPrefab: {fileID: 5885649562666882474}
   itemIcon: {fileID: 0}
   itemSlot: 0
+  itemReferenceGetter: {fileID: 6671130654216905509}
   weaponDataSettings: {fileID: 11400000, guid: e11f1d16b03474367acf1e36152d91e0, type: 2}
   weaponShootSettings: {fileID: 0}
   _ammo: 0
   _fullAmmo: 0
-  leftHandTransform: {fileID: 3543117757698836994}
-  rightHandTransform: {fileID: 8941776467612273011}
 --- !u!114 &7519246207031696649
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -317,7 +318,6 @@ MonoBehaviour:
   _isItemActive: 0
   itemRigidbody: {fileID: 7481570533478448748}
   boxCollider: {fileID: 6510997848049035708}
-  itemUI: {fileID: 2257101991682529510}
   _isPickupComplete:
     _value: 0
   _isDropComplete:
@@ -361,6 +361,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a591d221a634417e9827eb58e17de84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
   SyncScale: 0
   SyncParent: 1
   _interpolationTarget: {fileID: 1944688493515051663}
@@ -371,6 +372,21 @@ MonoBehaviour:
     Position: 0.01
     Rotation: 0.01
     Scale: 0.01
+--- !u!114 &6671130654216905509
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5885649562666882474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e249b7d3e8a284b8faabb89c2dbf8b2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightHandTarget: {fileID: 8941776467612273011}
+  leftHandTarget: {fileID: 3543117757698836994}
+  itemUI: {fileID: 2257101991682529510}
 --- !u!1 &6608469458117354563
 GameObject:
   m_ObjectHideFlags: 0

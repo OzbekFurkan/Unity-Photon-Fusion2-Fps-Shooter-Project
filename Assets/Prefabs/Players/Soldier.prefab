@@ -537,7 +537,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputSettings: {fileID: 11400000, guid: a3cfea0745aa34ea2be66a46dd78fb63, type: 2}
   playerDataMono: {fileID: 4668899232703723864}
-  isAuto: 0
   isLeaderboardButtonPressed: 0
   isPauseButtonPressed: 0
 --- !u!54 &339787928638379081
@@ -653,13 +652,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e13544571268ae54da64326b1ded3955, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isDead: 0
-  _HP: 0
   playerDataMono: {fileID: 4668899232703723864}
   itemSwitch: {fileID: 7171961804328239409}
   KCC: {fileID: 7339279321657204673}
   inventoryManager: {fileID: 6863025440145560926}
   weaponHolder: {fileID: 1627699624030451874}
+  hitboxRoot: {fileID: 1852728354347325528}
+  characterMovementHandler: {fileID: 6992278167077286510}
+  _isDead: 0
+  _HP: 0
   playerModel: {fileID: 6860565821398973337}
   deathGameObjectPrefab: {fileID: 4817986840635846212, guid: cee29fc4fd375c44588dfd4c0b0689d1, type: 3}
 --- !u!114 &6239717404664747632
@@ -751,8 +752,8 @@ MonoBehaviour:
   animator: {fileID: 931145539931278761}
   itemSwitch: {fileID: 7171961804328239409}
   weaponHolder: {fileID: 1627699624030451874}
-  leftHandMoverTarget: {fileID: 2229666032405605349}
-  rightHandMoverTarget: {fileID: 9089325640019713482}
+  leftHandMover: {fileID: 2229666032405605349}
+  rightHandMover: {fileID: 9089325640019713482}
 --- !u!114 &914766896802418905
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -895,7 +896,7 @@ Transform:
   m_GameObject: {fileID: 4711711362191773512}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.66011244, y: 0.95609385, z: -1.0557773}
+  m_LocalPosition: {x: -0.058, y: -1.356, z: -0.727}
   m_LocalScale: {x: 0.14925373, y: 0.14925373, z: 0.14925373}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1483,7 +1484,7 @@ Transform:
   m_GameObject: {fileID: 8917637495999863623}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.8020048, y: 0.8559367, z: 0.5159914}
+  m_LocalPosition: {x: 0.19, y: 0.19, z: -0.21}
   m_LocalScale: {x: 0.14925373, y: 0.14925373, z: 0.14925373}
   m_ConstrainProportionsScale: 0
   m_Children: []

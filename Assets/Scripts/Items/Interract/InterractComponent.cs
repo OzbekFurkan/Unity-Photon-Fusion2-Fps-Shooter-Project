@@ -24,7 +24,6 @@ namespace Item.Interract
         [Header("Components")]
         [SerializeField] Rigidbody itemRigidbody;
         [SerializeField] BoxCollider boxCollider;
-        public GameObject itemUI;
 
         //Mutex Flags
         [Networked, HideInInspector] public NetworkBool isPickupComplete { get; set; }
@@ -62,8 +61,7 @@ namespace Item.Interract
         private void SetItemProps(PlayerRef newOwner, NetworkId parentNetworkObjectid)
         {
             IsPickedUp = true;
-            itemRigidbody.isKinematic = true;
-            isKinematicRig = true;
+            ToggleRigidbodyIsKinematic(true);
             isItemActive = true;
             parentPlayerObject = Runner.FindObject(parentNetworkObjectid).gameObject;
             Owner = parentPlayerObject.GetComponent<NetworkObject>();
@@ -101,7 +99,7 @@ namespace Item.Interract
 
             isDropComplete = false;
             ResetItemProps();
-            ThrowWeapon();
+            ThrowItem();
             ToggleColliderIsTrigger(false);
             SendDropCallBack();
             parentPlayerObject = null;
@@ -113,11 +111,10 @@ namespace Item.Interract
             Owner = null;
             transform.SetParent(FindObjectOfType<ParentSyncInScene>().transform);
             isItemActive = false;
-            itemRigidbody.isKinematic = false;
-            isKinematicRig = false;
+            ToggleRigidbodyIsKinematic(false);
             Object.RemoveInputAuthority();
         }
-        private void ThrowWeapon()
+        private void ThrowItem()
         {
             itemRigidbody.AddForce(transform.forward, ForceMode.Impulse);
         }
@@ -129,15 +126,15 @@ namespace Item.Interract
         }
         #endregion
 
+        private void ToggleRigidbodyIsKinematic(bool current)
+        {
+            itemRigidbody.isKinematic = current;
+            isKinematicRig = current;
+        }
         private void ToggleColliderIsTrigger(bool current)
         {
             boxCollider.isTrigger = current;
             isTriggerCol = current;
-        }
-
-        public GameObject GetItemUI()
-        {
-            return itemUI;
         }
 
     }

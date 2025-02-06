@@ -12,36 +12,26 @@ namespace Player
 {
     public class HPHandler : NetworkBehaviour
     {
-        [Header("Network Related Variables")]
-        ChangeDetector changeDetector;
-        [Networked]
-        public bool isDead { get; set; }
-        [Networked, OnChangedRender(nameof(OnHPChanged))]
-        public byte HP { get; set; }//runtime hp value
-
         [Header("Player References")]
         [SerializeField] PlayerDataMono playerDataMono;
         [SerializeField] ItemSwitch itemSwitch;
         [SerializeField] SimpleKCC KCC;
         [SerializeField] InventoryManager inventoryManager;
         [SerializeField] Transform weaponHolder;
-        HitboxRoot hitboxRoot;
-        CharacterMovementHandler characterMovementHandler;
+        [SerializeField] HitboxRoot hitboxRoot;
+        [SerializeField] CharacterMovementHandler characterMovementHandler;
+
+        //Network Related Variables
+        [Networked, OnChangedRender(nameof(OnStateChanged))] public bool isDead { get; set; } = false;
+        [Networked] public byte HP { get; set; }//runtime hp value
 
         [Header("Effects")]
         public GameObject playerModel;//our model will be invisible when died and will be visible when revieved
         public GameObject deathGameObjectPrefab;//particle effect to play when died
 
-        private void Awake()
-        {
-            characterMovementHandler = GetComponent<CharacterMovementHandler>();
-            hitboxRoot = GetComponentInChildren<HitboxRoot>();
-        }
-
         public override void Spawned()
         {
-            changeDetector = GetChangeDetector(ChangeDetector.Source.SimulationState);
-            isDead = false;
+            //set starting hp
             HP = playerDataMono.startingHP;
         }
 
@@ -56,71 +46,42 @@ namespace Player
 
         void CheckFallRespawn()
         {
-            if (transform.position.y < -10)
-            {
-                if (Object.HasStateAuthority)
-                {
-                    Debug.Log($"{Time.time} Respawn due to fall outside of map at position {transform.position}");
+            if (transform.position.y > -10) return;
 
-                    Respawn();
-                }
+            if (!Object.HasStateAuthority) return;
 
-            }
+            Respawn();
         }
 
-        public override void Render()
+        #region DEAD_AND_REVIVE_STATE_REMOTE
+        public void OnStateChanged(NetworkBehaviourBuffer previous)
         {
-            foreach (var change in changeDetector.DetectChanges(this, out var prev, out var current))
-            {
-                switch (change)
-                {
-                    case nameof(isDead):
-                        var stateReader = GetPropertyReader<bool>(nameof(isDead));
-                        var (isDeadOld, isDeadCurrent) = stateReader.Read(prev, current);
-                        OnStateChanged(isDeadOld, isDeadCurrent);
-                        break;
-                }
-            }
-        }
+            //get previous value and compare if player died or revived.
+            var prevValue = GetPropertyReader<bool>(nameof(isDead)).Read(previous);
 
-        #region HP_REDUCED_REMOTE
-        public void OnHPChanged()
-        {
-            Debug.Log($"{Time.time} OnHPChanged value :" + HP);
-            playerDataMono.HP = HP;
-        }
-        #endregion
-
-        #region DEAD_STATE_REMOTE
-        public void OnStateChanged(bool isDeadOld, bool isDeadCurrent)
-        {
-            //Handle on death for the player. Also check if the player was dead but is now alive in that case revive the player.
-            if (isDeadCurrent)
+            //handle on death for the player.
+            if (isDead)
                 OnDeath();
 
-            else if (!isDeadCurrent && isDeadOld)
+            //check if the player was dead but is now alive in that case revive the player.
+            else if (!isDead && prevValue)
                 OnRevive();
         }
         private void OnDeath()
         {
-            Debug.Log($"{Time.time} OnDeath");
+            SetPlayerPropsToBeSync(false);
 
-            playerModel.gameObject.SetActive(false);
-            hitboxRoot.HitboxRootActive = false;
-            characterMovementHandler.SetCharacterControllerEnabled(false);
-
+            //enable all slots to make drop action visible for remote players otherwise they can not call drop method
+            //which is child of these slots
             for (int i = 0; i < weaponHolder.childCount; i++)
                 weaponHolder.GetChild(i).gameObject.SetActive(true);
 
+            //death prefab particle effect, it is destroyed after 2 seconds.
             Instantiate(deathGameObjectPrefab, transform.position, Quaternion.identity);
         }
         private void OnRevive()
         {
-            Debug.Log($"{Time.time} OnRevive");
-
-            playerModel.gameObject.SetActive(true);
-            hitboxRoot.HitboxRootActive = true;
-            characterMovementHandler.SetCharacterControllerEnabled(true);
+            SetPlayerPropsToBeSync(true);
         }
         #endregion
 
@@ -185,6 +146,7 @@ namespace Player
             playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
         }
 
+        //respawn delay
         IEnumerator RequestRespawn()
         {
 
@@ -223,19 +185,26 @@ namespace Player
             KCC.SetPosition(spawnPoint);
         }
 
+        private void SetPlayerPropsToBeSync(bool state)
+        {
+            playerModel.gameObject.SetActive(state);
+            hitboxRoot.HitboxRootActive = state;
+            characterMovementHandler.SetCharacterControllerEnabled(state);
+        }
+
+        //Reset variables
         public void OnRespawned()
         {
-            //Reset variables
             ResetPlayerState();
 
             HP = playerDataMono.startingHP;
 
             isDead = false;
 
-            playerModel.gameObject.SetActive(true);
-            hitboxRoot.HitboxRootActive = true;
-            characterMovementHandler.SetCharacterControllerEnabled(true);
+            SetPlayerPropsToBeSync(true);
 
+            //we enable all the slots to be able to drop all items when we die.
+            //here, we disable other slots by calling switch slot method.
             itemSwitch.SwitchSlot(itemSwitch.currentSlot);
         }
         #endregion

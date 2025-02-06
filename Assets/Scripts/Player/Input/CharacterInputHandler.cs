@@ -39,14 +39,6 @@ namespace Player
         [HideInInspector] public bool isLeaderboardButtonPressed;
         [HideInInspector] public bool isPauseButtonPressed;
 
-        //Other components
-        LocalCameraHandler localCameraHandler;
-
-        private void Awake()
-        {
-            localCameraHandler = GetComponentInChildren<LocalCameraHandler>();
-        }
-
         // Start is called before the first frame update
         void Start()
         {
@@ -107,7 +99,6 @@ namespace Player
 
             //mouse look
             _networkInput.lookRotationVector += new Vector2(-Input.GetAxisRaw("Mouse Y"), Input.GetAxisRaw("Mouse X"));
-            localCameraHandler.SetViewInputVector(_networkInput.lookRotationVector);
 
             //movement
             var moveDirection = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));

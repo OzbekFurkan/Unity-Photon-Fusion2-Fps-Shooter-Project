@@ -226,6 +226,7 @@ GameObject:
   - component: {fileID: 5044460827865789689}
   - component: {fileID: 5299571491799619484}
   - component: {fileID: 2636172041479883426}
+  - component: {fileID: 9137342924031435801}
   m_Layer: 7
   m_Name: AK57
   m_TagString: IgnoreLayerChange
@@ -277,6 +278,7 @@ MonoBehaviour:
   - {fileID: 653912256647317864}
   - {fileID: 5044460827865789689}
   - {fileID: 2636172041479883426}
+  ForceRemoteRenderTimeframe: 0
 --- !u!114 &993518319454867949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -323,12 +325,11 @@ MonoBehaviour:
   itemPrefab: {fileID: 9220623140272651354}
   itemIcon: {fileID: 0}
   itemSlot: 0
+  itemReferenceGetter: {fileID: 9137342924031435801}
   weaponDataSettings: {fileID: 11400000, guid: 4d60c99fa6bea40a3921d0c58d9a92ce, type: 2}
   weaponShootSettings: {fileID: 0}
   _ammo: 0
   _fullAmmo: 0
-  leftHandTransform: {fileID: 4719540053339201363}
-  rightHandTransform: {fileID: 2860878334903261732}
 --- !u!114 &5044460827865789689
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -348,7 +349,6 @@ MonoBehaviour:
   _isItemActive: 0
   itemRigidbody: {fileID: 5299571491799619484}
   boxCollider: {fileID: 8359678133616001100}
-  itemUI: {fileID: 4674980501479985951}
   _isPickupComplete:
     _value: 0
   _isDropComplete:
@@ -392,6 +392,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0a591d221a634417e9827eb58e17de84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _stateAuthorityChangeErrorCorrectionDelta: 0.15
   SyncScale: 0
   SyncParent: 1
   _interpolationTarget: {fileID: 3793393262660877183}
@@ -402,6 +403,21 @@ MonoBehaviour:
     Position: 0.01
     Rotation: 0.01
     Scale: 0.01
+--- !u!114 &9137342924031435801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9220623140272651354}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e249b7d3e8a284b8faabb89c2dbf8b2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rightHandTarget: {fileID: 2860878334903261732}
+  leftHandTarget: {fileID: 4719540053339201363}
+  itemUI: {fileID: 4674980501479985951}
 --- !u!1001 &2537714057275595956
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -8,11 +8,7 @@ namespace Player
 {
     public class LocalCameraHandler : NetworkBehaviour
     {
-
-        //Input
-        Vector2 viewInput;
-
-        //References
+        [Header("References")]
         public Transform CameraPivot;
         public Transform CameraHandle;
         public Transform WeaponHolder;
@@ -45,11 +41,6 @@ namespace Player
             
             // Transfer rotation from weapon holder target to weapon holder.
             WeaponHolder.SetPositionAndRotation(WeaponHolderTarget.position, WeaponHolderTarget.rotation);
-        }
-
-        public void SetViewInputVector(Vector2 viewInput)
-        {
-            this.viewInput = viewInput;
         }
     }
 }

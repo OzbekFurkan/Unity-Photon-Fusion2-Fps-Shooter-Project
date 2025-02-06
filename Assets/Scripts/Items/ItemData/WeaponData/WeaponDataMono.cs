@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using Fusion;
-using Item;
+using Item.Utils;
 using System;
 
 namespace Item
@@ -10,17 +10,24 @@ namespace Item
     
     public class WeaponDataMono : ItemDataMono, IHandAttachable
     {
-        [Header("Weapon Data Scriptable Objects")]
-        [SerializeField] public WeaponDataSettings weaponDataSettings;
+        [Header("Weapon References")]
+        [SerializeField] private ItemReferenceGetter itemReferenceGetter;
+        public WeaponDataSettings weaponDataSettings;
         [HideInInspector] public WeaponShootSettings weaponShootSettings;
 
         //Network
         [Networked, HideInInspector] public int ammo { get; set; }
         [Networked, HideInInspector] public int fullAmmo { get; set; }
 
-        [Header("Hand Attach")]
-        public Transform leftHandTransform;
-        public Transform rightHandTransform;
+        //Hand Attach Points
+        public Transform leftHandTarget { get; set; }
+        public Transform rightHandTarget { get; set; }
+
+        private void Start()
+        {
+            leftHandTarget = itemReferenceGetter.LeftHandTargetGetter();
+            rightHandTarget = itemReferenceGetter.RightHandTargetGetter();
+        }
 
         public override void Spawned()
         {
@@ -45,14 +52,14 @@ namespace Item
             base.itemSlot = itemSlot;
         }
 
-        public Transform GetLeftHandTransform()
+        public Transform GetLeftHandTarget()
         {
-            return leftHandTransform;
+            return leftHandTarget;
         }
 
-        public Transform GetRightHandTransform()
+        public Transform GetRightHandTarget()
         {
-            return rightHandTransform;
+            return rightHandTarget;
         }
     }
 }

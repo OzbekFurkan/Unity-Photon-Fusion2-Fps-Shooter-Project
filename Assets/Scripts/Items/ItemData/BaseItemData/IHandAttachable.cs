@@ -4,23 +4,22 @@ using UnityEngine;
 
 namespace Item
 {
+    /// <summary>All the items that can be held should implement this interface and follow the instructions 
+    /// so we can have target points of both hands with this single interface references in any script of player.</summary>
     public interface IHandAttachable
     {
-        /// <summary>
-        /// This is used for attaching left hand to item's left hand object. 
-        /// A Transform variable must be assigned with the transform of the LeftHandTransform empty gameobject's
-        /// transform which is child of the item that implements this interface.
-        /// </summary>
-        /// <returns>Returns the tranform object of the left hand</returns>
-        public abstract Transform GetLeftHandTransform();
+        /// <summary>The gameobject transform that refers to the point where player's left hand should be placed.
+        /// You can access it from ItemReferenceGetter script in Awake</summary>
+        public Transform leftHandTarget { get; set; }
+        /// <summary>The gameobject transform that refers to the point where player's right hand should be placed.
+        /// You can access it from ItemReferenceGetter script in Awake</summary>
+        public Transform rightHandTarget { get; set; }
 
-        /// <summary>
-        /// This is used for attaching right hand to item's left hand object. 
-        /// A Transform variable must be assigned with the transform of the RightHandTransform empty gameobject's
-        /// transform which is child of the item that implements this interface.
-        /// </summary>
-        /// <returns>Returns the tranform object of the right hand</returns>
-        public abstract Transform GetRightHandTransform();
+        /// <returns>Returns the tranform object of the left hand target.</returns>
+        public abstract Transform GetLeftHandTarget();
+
+        /// <returns>Returns the tranform object of the right hand target.</returns>
+        public abstract Transform GetRightHandTarget();
     }
 }
 

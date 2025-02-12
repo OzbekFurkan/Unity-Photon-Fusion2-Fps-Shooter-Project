@@ -13,6 +13,7 @@ namespace Item
         public float hitDistance;
         public byte hitDamage;
         public GameObject impactEffectPrefab;
+        public GameObject ammoTrail;
         public bool isAuto;
 
         [Header("Recoil")]

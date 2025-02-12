@@ -17,6 +17,7 @@ GameObject:
   - component: {fileID: 1691940674007094643}
   - component: {fileID: 8819375887758854221}
   - component: {fileID: 1856115094234837294}
+  - component: {fileID: 8587701276296903005}
   m_Layer: 7
   m_Name: M4
   m_TagString: IgnoreLayerChange
@@ -93,10 +94,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 105c64a9d94ec46a99afed3c05b721aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isFiring: 0
   interractComponent: {fileID: 1797113551092626966}
   weaponDataMono: {fileID: 6332640098777451399}
   aimPoint: {fileID: 7374859847165471}
+  animator: {fileID: 8587701276296903005}
   fireParticleSystem: {fileID: 2634062280194960951}
 --- !u!114 &6332640098777451399
 MonoBehaviour:
@@ -208,6 +209,27 @@ MonoBehaviour:
   rightHandTarget: {fileID: 3704350610409213501}
   leftHandTarget: {fileID: 5683320881142010497}
   itemUI: {fileID: 2519343807546851009}
+--- !u!95 &8587701276296903005
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2379902543376957109}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1d914d0cf1fdd4a1db73ffa3b1fd36ca, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4448876515820434962
 GameObject:
   m_ObjectHideFlags: 0

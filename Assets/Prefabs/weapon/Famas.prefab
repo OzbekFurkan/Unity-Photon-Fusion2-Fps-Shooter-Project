@@ -196,6 +196,7 @@ GameObject:
   - component: {fileID: 7481570533478448748}
   - component: {fileID: 778467918105699154}
   - component: {fileID: 6671130654216905509}
+  - component: {fileID: 4759304372477817589}
   m_Layer: 7
   m_Name: Famas
   m_TagString: IgnoreLayerChange
@@ -272,10 +273,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 105c64a9d94ec46a99afed3c05b721aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isFiring: 0
   interractComponent: {fileID: 7519246207031696649}
   weaponDataMono: {fileID: 2831380193057120408}
   aimPoint: {fileID: 8120879305032731904}
+  animator: {fileID: 4759304372477817589}
   fireParticleSystem: {fileID: 6063826860280628520}
 --- !u!114 &2831380193057120408
 MonoBehaviour:
@@ -387,6 +388,27 @@ MonoBehaviour:
   rightHandTarget: {fileID: 8941776467612273011}
   leftHandTarget: {fileID: 3543117757698836994}
   itemUI: {fileID: 2257101991682529510}
+--- !u!95 &4759304372477817589
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5885649562666882474}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1d914d0cf1fdd4a1db73ffa3b1fd36ca, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &6608469458117354563
 GameObject:
   m_ObjectHideFlags: 0

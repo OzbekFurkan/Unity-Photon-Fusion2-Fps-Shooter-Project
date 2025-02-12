@@ -18,6 +18,7 @@ MonoBehaviour:
   hitDistance: 100
   hitDamage: 30
   impactEffectPrefab: {fileID: 8841237168206491380, guid: 5faf352c16546461a9a4188c9a42cc4f, type: 3}
+  ammoTrail: {fileID: 2704125845881788579, guid: cd8c5ad5c7aeb4545987847dd02c87d4, type: 3}
   isAuto: 1
   recoilPattern: {fileID: 11400000, guid: d73e099364fea40aa90f5f1bd49a5eac, type: 2}
   recoilIntensity: 1

@@ -17,8 +17,6 @@ namespace Item
         private WeaponDataMono weaponData;
         private CharacterInputHandler _input;
 
-        bool isFiring = false;//for auto mode
-
         private void Awake()
         {
             shootManager = GetComponent<ShootManager>();
@@ -57,18 +55,18 @@ namespace Item
             //calculate shoot direction
             Vector3 aimForward = owner.GetComponent<PlayerReferenceGetter>().GetPlayerCameraHandle().transform.forward;
 
-            // Comparing current input buttons to previous input buttons - this prevents glitches when input is lost
+            //non-auto shoot
             if (!weaponData.weaponShootSettings.isAuto && input.Buttons.WasPressed(previousButtons, InputButton.Fire))
                 shootManager.Fire(aimForward);
 
             //auto shoot input
             else if (weaponData.weaponShootSettings.isAuto && input.Buttons.WasPressed(previousButtons, InputButton.Fire))
-                isFiring = true;
+                shootManager.isFiring = true;
             else if (weaponData.weaponShootSettings.isAuto && input.Buttons.WasReleased(previousButtons, InputButton.Fire))
-                isFiring = false;
+                shootManager.isFiring = false;
 
             //auto shooting
-            if(isFiring)
+            if(shootManager.isFiring)
                 shootManager.Fire(aimForward);
         }
 

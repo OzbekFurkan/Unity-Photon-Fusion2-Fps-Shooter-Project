@@ -227,6 +227,7 @@ GameObject:
   - component: {fileID: 5299571491799619484}
   - component: {fileID: 2636172041479883426}
   - component: {fileID: 9137342924031435801}
+  - component: {fileID: 986025882614048616}
   m_Layer: 7
   m_Name: AK57
   m_TagString: IgnoreLayerChange
@@ -303,10 +304,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 105c64a9d94ec46a99afed3c05b721aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isFiring: 0
   interractComponent: {fileID: 5044460827865789689}
   weaponDataMono: {fileID: 653912256647317864}
   aimPoint: {fileID: 6839582728444175600}
+  animator: {fileID: 986025882614048616}
   fireParticleSystem: {fileID: 8826833811451686104}
 --- !u!114 &653912256647317864
 MonoBehaviour:
@@ -418,6 +419,27 @@ MonoBehaviour:
   rightHandTarget: {fileID: 2860878334903261732}
   leftHandTarget: {fileID: 4719540053339201363}
   itemUI: {fileID: 4674980501479985951}
+--- !u!95 &986025882614048616
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9220623140272651354}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 1d914d0cf1fdd4a1db73ffa3b1fd36ca, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1001 &2537714057275595956
 PrefabInstance:
   m_ObjectHideFlags: 0

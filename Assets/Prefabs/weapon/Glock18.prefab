@@ -48,6 +48,7 @@ GameObject:
   - component: {fileID: 6426134942824705690}
   - component: {fileID: 6517158605622545218}
   - component: {fileID: 1310158035663496078}
+  - component: {fileID: 8283079422151409548}
   m_Layer: 7
   m_Name: Glock18
   m_TagString: IgnoreLayerChange
@@ -124,10 +125,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 105c64a9d94ec46a99afed3c05b721aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _isFiring: 0
   interractComponent: {fileID: 2595150212352237699}
   weaponDataMono: {fileID: 6332640098777451399}
   aimPoint: {fileID: 7374859847165471}
+  animator: {fileID: 8283079422151409548}
   fireParticleSystem: {fileID: 2634062280194960951}
 --- !u!114 &6332640098777451399
 MonoBehaviour:
@@ -239,6 +240,27 @@ MonoBehaviour:
   rightHandTarget: {fileID: 7304928500633427561}
   leftHandTarget: {fileID: 7293523991148225682}
   itemUI: {fileID: 7293900027066294132}
+--- !u!95 &8283079422151409548
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2379902543376957109}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 6aa1b095e4c8b4adbb43efd24b360dbe, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!1 &4263829144628363723
 GameObject:
   m_ObjectHideFlags: 0

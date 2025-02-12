@@ -10,119 +10,106 @@ namespace Item
 {
     public class ShootManager : NetworkBehaviour
     {
-        //Network Properties
-        [Networked, OnChangedRender(nameof(OnFireChanged))]
-        public bool isFiring { get; set; }
-
         [Header("References")]
-        [SerializeField] InterractComponent interractComponent;
+        [SerializeField] private InterractComponent interractComponent;
         [SerializeField] private WeaponDataMono weaponDataMono;
-        Transform playerCamera;
-        public Transform aimPoint;
+        [SerializeField] private Transform aimPoint;
+        [SerializeField] private Animator animator;
 
         [Header("Fire Datas")]
         float lastTimeFired = 0;
-        [Networked] private Vector3 playercameraHitpoint { get; set; }
-        [Networked] float hitPointDistance { get; set; }
+        [Networked] public bool isFiring { get; set; } = false;
         [Networked] Vector3 fireHitPoint { get; set; }
         [Networked] Vector3 fireHitPointNormal { get; set; }
 
         [Header("Recoil Follow")]
         private int currentRecoilIndex = 0;
-        private Vector2 currentRecoil;
-        private bool isRecoiling = false;
-        private float recoilTolerance;
-        private float distanceRefactor;
 
         [Header("Effects")]
+        int visibleFireCount = 0;
+        [Networked] int fireCount { get; set; }
         public ParticleSystem fireParticleSystem;
 
         public override void Spawned()
         {
-            
+            visibleFireCount = fireCount;
         }
-
-        #region SYNC_FIRE
-        public void OnFireChanged()
-        {
-            if (isFiring)
-                OnFireRemote();
-
-        }
-        void OnFireRemote()
-        {
-            if (!Object.HasInputAuthority)
-            {
-                fireParticleSystem.Play();
-            }
-            //you have to control if something else hitted otherwise it will spawn it when missed too.
-            GameObject impactHole = Instantiate(weaponDataMono.weaponShootSettings.impactEffectPrefab, fireHitPoint + fireHitPointNormal * 0.001f, Quaternion.LookRotation(fireHitPointNormal));
-            Destroy(impactHole, 2f);
-        }
-        #endregion
 
         #region FIRE_ACTION
         public void Fire(Vector3 aimVector)
         {
             //Limit fire rate
-            if (Time.time - lastTimeFired < 0.15f)
-                return;
+            if (Time.time - lastTimeFired < 0.15f) return;
 
+            //reset recoil index if 0.5 second passed since last time fired
+            else if (Time.time - lastTimeFired > 0.5f)
+                currentRecoilIndex = 0;
+
+            //reset last time fired
             lastTimeFired = Time.time;
 
-            //reload check
+            //owner null check
+            if (interractComponent.Owner == null) return;
+
+            //get player data
             interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
-            if (weaponDataMono.ammo <= 0 && playerData != null)
+
+            //player data null check
+            if (playerData == null) return;
+
+            //reload check
+            if (weaponDataMono.ammo <= 0)
             {
+                //reload if not already reloading and have magazin to reload
                 if(playerData.playerState != PlayerState.Reloading && weaponDataMono.fullAmmo > 0)
-                    StartCoroutine(Reload());
-                else if(playerData.playerState == PlayerState.Reloading)
-                    return;
+                    StartCoroutine(Reload(playerData));
+
+                return;//return if already reloading or after reload or not have a magazin to reload
             }
             
-            //player camera raycast
-            if (interractComponent.Owner != null)
-            {
-                interractComponent.Owner.gameObject.TryGetComponent<PlayerReferenceGetter>
-                    (out PlayerReferenceGetter playerReferenceGetter);
-                if (playerReferenceGetter != null)
-                {
-                    playerCamera = playerReferenceGetter.GetPlayerCameraHandle();
-                    bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,
-                    weaponDataMono.weaponShootSettings.hitDistance, Object.InputAuthority, out var detectedInfo,
-                    weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
-                    if (isHit)
-                    {
-                        if (Object.HasStateAuthority)
-                        {
-                            playercameraHitpoint = detectedInfo.Point;
-                            hitPointDistance = detectedInfo.Distance;
-                        }
-                            
-                    }
-                    else return;
-                    
-                }
-                else return;
-            }
-            else return;
+            //get player reference getter to get player camera
+            interractComponent.Owner.gameObject.TryGetComponent<PlayerReferenceGetter>
+                (out PlayerReferenceGetter playerReferenceGetter);
 
-            //recoil aplied
-            ApplyRecoil();
+            if (playerReferenceGetter == null) return;
 
-            //recoil and distance factor added shoot vector is calculated based on player camera raycast results
+            Transform playerCamera = playerReferenceGetter.GetPlayerCameraHandle();
 
+            //raycast parameters assigned
             float hitDistance = weaponDataMono.weaponShootSettings.hitDistance;
-            //distace refactor to increase pattern scale in long distance
-            distanceRefactor = Mathf.Clamp(hitPointDistance / hitDistance, 0.01f, 0.5f);// Closer to 0 for shorter distances, closer to 0.5 for longer distances
+            LayerMask layerMask = weaponDataMono.weaponShootSettings.collisionLayers;
 
+            //player camera raycast
+            bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,hitDistance, Object.InputAuthority,
+                out var detectedInfo, layerMask, HitOptions.IncludePhysX);
+
+            //return if nothing is hit
+            if (!isHit) return;
+
+            //player camera straight raycast results are stored in the variables below
+            Vector3 playercameraHitpoint = detectedInfo.Point;
+            float hitPointDistance = detectedInfo.Distance;
+            
+
+            //get current recoil vector to be used in shoot vector calculations
+            Vector2 currentRecoil = GetCurrentRecoilVector();
+
+            //recoil and distance factor added shoot vector is calculated based on player camera's raycast results
+
+            //distace refactor to increase pattern scale in long distance
+            //closer to 0 for shorter distances, closer to 0.5 for longer distances
+            float distanceRefactor = Mathf.Clamp(hitPointDistance / hitDistance, 0.01f, 0.5f);
+
+            //recoil offset vector is calculated to be added on the player camera shoot vector
             Vector3 recoilOffset = (playerCamera.right * currentRecoil.x + Quaternion.AngleAxis(playerCamera.transform.eulerAngles.x, playerCamera.right) * (-playerCamera.up * currentRecoil.y));
 
+            //final shoot vector calculated with recoil offset and distance factor, then normalized
             Vector3 shootvector = ((playercameraHitpoint - aimPoint.position) + recoilOffset * distanceRefactor).normalized;
 
-            //weapon raycast
+            //weapon raycast (final raycast)
             Runner.LagCompensation.Raycast(aimPoint.position, shootvector, hitDistance, Object.InputAuthority,
-                out var hitinfo, weaponDataMono.weaponShootSettings.collisionLayers, HitOptions.IncludePhysX);
+                out var hitinfo, layerMask, HitOptions.IncludePhysX);
+
             //player hit
             if (hitinfo.Hitbox != null)
             {
@@ -142,125 +129,122 @@ namespace Item
                 fireHitPointNormal = hitinfo.Normal;
             }
 
-            //visual fire and ammo decrement
-            StartCoroutine(FireEffectCO());
+            //ammo decrement
+            weaponDataMono.ammo--;
+
+            //fire count incerement, we will compare it with the local one and show fire effect once for each player in Render
+            fireCount++;
+
+            //for non-auto
+            if (weaponDataMono.itemSlot == (int)ItemSlot.Pistol)
+                animator.SetTrigger("shooting");
 
         }
 
-        IEnumerator FireEffectCO()
+        public override void Render()
         {
-            isFiring = true;
+            ShowFireEffects();
+        }
 
-            weaponDataMono.ammo--;
-            fireParticleSystem.Play();
+        private void ShowFireEffects()
+        {
+            if(weaponDataMono.itemSlot == (int)ItemSlot.Rifle)
+                animator.SetBool("shooting", isFiring);
 
-            yield return new WaitForSeconds(0.09f);
+            if (visibleFireCount < fireCount)
+            {
+                fireParticleSystem.Play();
 
-            isFiring = false;
+                GameObject trailGO = Instantiate(weaponDataMono.weaponShootSettings.ammoTrail, aimPoint.position, Quaternion.identity);
+                trailGO.TryGetComponent<TrailRenderer>(out TrailRenderer trail);
+                if(trail)
+                {
+                    StartCoroutine(AnimateAmmoTrailToHitPoint(trail, trail.transform.position, fireHitPoint, fireHitPointNormal, trail.time));
+                }
+            }
+            
+            visibleFireCount = fireCount;
+        }
+        private IEnumerator AnimateAmmoTrailToHitPoint(TrailRenderer trail, Vector3 startPos, Vector3 hitPos, Vector3 hitNormal, float duration)
+        {
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                // Calculate t as the ratio of elapsed time to the total duration
+                float t = elapsed / duration;
+                trail.transform.position = Vector3.Lerp(startPos, hitPos, t);
+                elapsed += Time.deltaTime;
+                yield return null; // wait until next frame
+            }
+
+            // Ensure the trail ends exactly at the hit point
+            trail.transform.position = hitPos;
+            Destroy(trail.gameObject);
+
+            //impact effect
+            if (fireHitPoint != Vector3.zero)
+            {
+                GameObject impactEffect = Instantiate(weaponDataMono.weaponShootSettings.impactEffectPrefab,
+                    hitPos + hitNormal * 0.001f, Quaternion.LookRotation(hitNormal));
+                Destroy(impactEffect, 2f);
+            }
         }
         #endregion
 
         #region RELOAD
-        private IEnumerator Reload()
+        private IEnumerator Reload(PlayerDataMono playerDataMono)
         {
-            PlayerDataMono playerDataMono = null;
-
-            //assign player data
-            interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
-            if(playerData != null)
-                playerDataMono = playerData;
-
             //set player state
-            if (playerDataMono != null)
-            {
-                playerDataMono.playerState = PlayerState.Reloading;
-                playerDataMono.playerStateStack.Add(PlayerState.Reloading);
-            }
+            playerDataMono.playerState = PlayerState.Reloading;
+            playerDataMono.playerStateStack.Add(PlayerState.Reloading);
+
+            animator.SetTrigger("reloading");
 
             //wait 2 seconds for reloading...
             yield return new WaitForSeconds(2f);
 
-            //set ammo values
+            //set ammo
             weaponDataMono.ammo = weaponDataMono.fullAmmo <= weaponDataMono.weaponDataSettings.ammo ?
                 weaponDataMono.fullAmmo : weaponDataMono.weaponDataSettings.ammo;
 
+            //set full ammo
             weaponDataMono.fullAmmo = weaponDataMono.fullAmmo <= weaponDataMono.ammo ?
                 0 : weaponDataMono.fullAmmo - weaponDataMono.ammo;
 
             //set player state to previous
-            if (playerDataMono != null)
-            {
-                playerDataMono.playerStateStack.Remove(PlayerState.Reloading);
-                playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
-            }
+            playerDataMono.playerStateStack.Remove(PlayerState.Reloading);
+            playerDataMono.playerState = playerDataMono.playerStateStack.GetLast();
 
         }
         #endregion
 
         #region FIRE_RECOIL
-        public void ApplyRecoil()
+        public Vector2 GetCurrentRecoilVector()
         {
-            if (weaponDataMono.weaponShootSettings.recoilPattern == null || weaponDataMono.weaponShootSettings.recoilPattern.pattern.Length == 0)
-                return;
+            RecoilPatternData recoilPattern = weaponDataMono.weaponShootSettings.recoilPattern;
+            int patternLength = weaponDataMono.weaponShootSettings.recoilPattern.pattern.Length;
 
-            recoilTolerance = weaponDataMono.weaponShootSettings.recoilTolerance;
+            if (recoilPattern == null || patternLength == 0)
+                return Vector2.zero;
 
-            // Get the current recoil pattern point
-            Vector2 recoilPoint = weaponDataMono.weaponShootSettings.recoilPattern.pattern[currentRecoilIndex];
-            Debug.Log("recoil index: " + currentRecoilIndex);
-            // Add random tolerance
-            float randomX = Random.Range(-weaponDataMono.weaponShootSettings.recoilTolerance, recoilTolerance);
-            float randomY = Random.Range(-weaponDataMono.weaponShootSettings.recoilTolerance, recoilTolerance);
+            float recoilTolerance = weaponDataMono.weaponShootSettings.recoilTolerance;
+            float recoilIntensity = weaponDataMono.weaponShootSettings.recoilIntensity;
 
-            currentRecoil = new Vector2(recoilPoint.x + randomX, recoilPoint.y + randomY) * weaponDataMono.weaponShootSettings.recoilIntensity;
+            // Get the current recoil pattern point and incerement index of pattern
+            Vector2 recoilPoint = recoilPattern.pattern[currentRecoilIndex++];
 
-            //method should be divided from here and put it on below of fire method
-
-            // Apply recoil movement to the weapon (rotate or move)
-            StartCoroutine(ApplyRecoilToWeapon());
-
-            // Move to the next recoil point
-            currentRecoilIndex++;
-
-            if (currentRecoilIndex >= weaponDataMono.weaponShootSettings.recoilPattern.pattern.Length)
+            //move to previous vector if pattern length is exceeded
+            if (currentRecoilIndex >= patternLength)
             {
                 currentRecoilIndex--;
+                recoilTolerance *= 5;
             }
-        }
-        IEnumerator ApplyRecoilToWeapon()
-        {
-            isRecoiling = true;
-            yield return new WaitForSeconds(0.2f);
-            isRecoiling = false;
 
-            //wait 0.5 second for player to shoot again to follow the pattern from where the player left, check every 0.1 second
-            for (int i = 0; i < 10; i++)
-            {
-                yield return new WaitForSeconds(0.05f);
-                if (isFiring)
-                    yield break;
-            }
-            //waited 0.5 second, pattern will be followed from scratch
-            currentRecoilIndex = 0;
-        }
-        public override void FixedUpdateNetwork()
-        {
-            //local
-            if (!Object.HasInputAuthority)
-                return;
+            // Add random tolerance
+            float randomX = Random.Range(-recoilTolerance, recoilTolerance);
+            float randomY = Random.Range(-recoilTolerance, recoilTolerance);
 
-            if (isRecoiling)
-            {
-                transform.localRotation = Quaternion.Slerp(transform.localRotation,
-                    Quaternion.Euler(new Vector3(currentRecoil.y, currentRecoil.x, 0)),
-                    weaponDataMono.weaponShootSettings.recoilSpeed);
-            }
-            else
-            {
-                transform.localRotation = Quaternion.Slerp(transform.localRotation,
-                    Quaternion.Euler(Vector3.zero),
-                    weaponDataMono.weaponShootSettings.recoilSpeed);
-            }
+            return new Vector2(recoilPoint.x + randomX, recoilPoint.y + randomY) * recoilIntensity;
         }
         #endregion
 

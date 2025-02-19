@@ -78,17 +78,13 @@ namespace Item
             {
                 recoilPatternForVisualization.Add(point);
             }
-            foreach (Vector2 point in recoilPatternForVisualization)
-            {
-                Debug.Log(point.x);
-            }
             //this part, changes all the points with their distance to the first point so the first point always will be (0,0)
             Vector2 firstPoint = recoilPattern[0];
             for(int i=0; i<recoilPattern.Count; i++)
             {
                 recoilPattern[i] = recoilPattern[i] - firstPoint;
             }
-            //This part, divides all the point by 10 so the values cant be to high
+            //This part, divides all the points by 10 so the values cant be too high
             for (int i = 0; i < recoilPattern.Count; i++)
             {
                 recoilPattern[i] = recoilPattern[i] / 10;

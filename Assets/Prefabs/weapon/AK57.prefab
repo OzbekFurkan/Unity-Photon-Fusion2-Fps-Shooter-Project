@@ -225,7 +225,7 @@ GameObject:
   - component: {fileID: 653912256647317864}
   - component: {fileID: 5044460827865789689}
   - component: {fileID: 5299571491799619484}
-  - component: {fileID: 2636172041479883426}
+  - component: {fileID: 5522164843674924102}
   - component: {fileID: 9137342924031435801}
   - component: {fileID: 986025882614048616}
   m_Layer: 7
@@ -278,7 +278,7 @@ MonoBehaviour:
   - {fileID: 9133276546424373264}
   - {fileID: 653912256647317864}
   - {fileID: 5044460827865789689}
-  - {fileID: 2636172041479883426}
+  - {fileID: 5522164843674924102}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &993518319454867949
 MonoBehaviour:
@@ -308,6 +308,7 @@ MonoBehaviour:
   weaponDataMono: {fileID: 653912256647317864}
   aimPoint: {fileID: 6839582728444175600}
   animator: {fileID: 986025882614048616}
+  _isFiring: 0
   fireParticleSystem: {fileID: 8826833811451686104}
 --- !u!114 &653912256647317864
 MonoBehaviour:
@@ -321,14 +322,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfbb8ee60a3745148387d91aa587699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: 
-  itemId: 0
-  itemPrefab: {fileID: 9220623140272651354}
-  itemIcon: {fileID: 0}
-  itemSlot: 0
+  itemDataSettings: {fileID: 0}
   itemReferenceGetter: {fileID: 9137342924031435801}
   weaponDataSettings: {fileID: 11400000, guid: 4d60c99fa6bea40a3921d0c58d9a92ce, type: 2}
-  weaponShootSettings: {fileID: 0}
   _ammo: 0
   _fullAmmo: 0
 --- !u!114 &5044460827865789689
@@ -381,7 +377,7 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &2636172041479883426
+--- !u!114 &5522164843674924102
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

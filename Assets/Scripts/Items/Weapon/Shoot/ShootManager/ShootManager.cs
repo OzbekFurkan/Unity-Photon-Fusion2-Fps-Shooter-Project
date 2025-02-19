@@ -80,11 +80,13 @@ namespace Item
             LayerMask layerMask = weaponDataMono.weaponShootSettings.collisionLayers;
 
             //player camera raycast
-            bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector,hitDistance, Object.InputAuthority,
-                out var detectedInfo, layerMask, HitOptions.IncludePhysX);
+            bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector, hitDistance, Object.InputAuthority,
+                out var detectedInfo, layerMask, HitOptions.IncludePhysX, QueryTriggerInteraction.Ignore);
 
             //return if nothing is hit
             if (!isHit) return;
+
+            Debug.DrawRay(aimPoint.position, aimVector*hitDistance, Color.green, 20f);
 
             //player camera straight raycast results are stored in the variables below
             Vector3 playercameraHitpoint = detectedInfo.Point;
@@ -108,15 +110,22 @@ namespace Item
 
             //weapon raycast (final raycast)
             Runner.LagCompensation.Raycast(aimPoint.position, shootvector, hitDistance, Object.InputAuthority,
-                out var hitinfo, layerMask, HitOptions.IncludePhysX);
+                out var hitinfo, layerMask, HitOptions.IncludePhysX, QueryTriggerInteraction.Ignore);
+
+            fireHitPoint = Vector3.zero;
+            fireHitPointNormal = Vector3.zero;
 
             //player hit
             if (hitinfo.Hitbox != null)
             {
                 Debug.Log($"{Time.time} {transform.name} hit hitbox {hitinfo.Hitbox.transform.root.name}");
 
-                if(Object.HasStateAuthority)
-                    hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamageRpc(interractComponent.Owner.Id,
+                //hit point info stored in networked variables so we can use them in Render to sync hit effect
+                fireHitPoint = hitinfo.Point;
+                fireHitPointNormal = hitinfo.Normal;
+
+                if (Object.HasStateAuthority)
+                    hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(interractComponent.Owner.Id,
                                                                                 weaponDataMono.weaponShootSettings.hitDamage);
 
             }
@@ -125,9 +134,12 @@ namespace Item
             {
                 Debug.Log($"{Time.time} {transform.name} hit PhysX collider {hitinfo.Collider.transform.name}");
 
+                //hit point info stored in networked variables so we can use them in Render to sync hit effect
                 fireHitPoint = hitinfo.Point;
                 fireHitPointNormal = hitinfo.Normal;
             }
+
+            Debug.DrawRay(aimPoint.position, (hitinfo.Point-aimPoint.position), Color.red, 20f);
 
             //ammo decrement
             weaponDataMono.ammo--;
@@ -136,7 +148,7 @@ namespace Item
             fireCount++;
 
             //for non-auto
-            if (weaponDataMono.itemSlot == (int)ItemSlot.Pistol)
+            if (weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Pistol)
                 animator.SetTrigger("shooting");
 
         }
@@ -148,7 +160,8 @@ namespace Item
 
         private void ShowFireEffects()
         {
-            if(weaponDataMono.itemSlot == (int)ItemSlot.Rifle)
+            
+            if(weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Rifle)
                 animator.SetBool("shooting", isFiring);
 
             if (visibleFireCount < fireCount)
@@ -182,7 +195,7 @@ namespace Item
             Destroy(trail.gameObject);
 
             //impact effect
-            if (fireHitPoint != Vector3.zero)
+            if (hitPos != Vector3.zero)
             {
                 GameObject impactEffect = Instantiate(weaponDataMono.weaponShootSettings.impactEffectPrefab,
                     hitPos + hitNormal * 0.001f, Quaternion.LookRotation(hitNormal));

@@ -86,48 +86,49 @@ namespace Player
         #endregion
 
         #region TAKE_DAMAGE_SERVER
-        //This function is called by other players and the changes in the hp value is handled above
+        //This function is called by other players in ShootManager script
         //Function only called on the server
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void OnTakeDamageRpc(NetworkId shooterNetworkId, byte damage)
+        public void OnTakeDamage(NetworkId shooterNetworkId, byte damage)
         {
             //Only take damage while alive
             if (isDead) return;
+
+            //get killer gameobject by killer network id
+            GameObject shooterGameObject = Runner.FindObject(shooterNetworkId).gameObject;
+
+            //null check
+            if (shooterGameObject == null) return;
+
+            //get killer player data component
+            PlayerDataMono shooterPlayerData = shooterGameObject.GetComponent<PlayerDataMono>();
+
+            //player data null check
+            if (shooterPlayerData == null) return;
+
+            //same team check, only enemy team player can give damage to us
+            if (shooterPlayerData.playerData.team == playerDataMono.playerData.team) return;
 
             HP -= damage;//damage taken
 
             Debug.Log($"{Time.time} {transform.name} took damage got {HP} left ");
 
-            //Player not died
+            //player death check
             if (HP > 0 && HP <= 100) return;
 
-            //player died
             isDead = true;
 
             Debug.Log($"{Time.time} {transform.name} died");
 
-            //get killer gameobject by killer network id
-            GameObject killerGameObject = Runner.FindObject(shooterNetworkId).gameObject;
-
-            //null check
-            if (killerGameObject == null) return;
-
-            //get killer player data component
-            PlayerDataMono killerPlayerData = killerGameObject.GetComponent<PlayerDataMono>();
-
-            //player data null check
-            if (killerPlayerData == null) return;
-
             //leaderboard
-            killerPlayerData.AddKill();//increase killer's kill counter
+            shooterPlayerData.AddKill();//increase killer's kill counter
             playerDataMono.AddDeath();//increase death player's death counter
 
             //killtable
             GameObject.FindAnyObjectByType<KillTableManager>()?.AddRawToKilltableRpc(
-                killerPlayerData.GetUsername(), playerDataMono.GetUsername());
+                shooterPlayerData.GetUsername(), playerDataMono.GetUsername());
 
             //team score for deathmatch
-            GameObject.FindAnyObjectByType<Deathmatch>()?.UpdateTeamScoresRpc(killerPlayerData.playerData.team);
+            GameObject.FindAnyObjectByType<Deathmatch>()?.UpdateTeamScoresRpc(shooterPlayerData.playerData.team);
 
             //respawn request
             StartCoroutine(RequestRespawn());
@@ -152,7 +153,7 @@ namespace Player
 
             StartDiedState();
 
-            yield return new WaitForSeconds(2.0f);
+            yield return new WaitForSeconds(2.0f);//time delay to respawn (2s)
 
             Respawn();
         }
@@ -163,7 +164,7 @@ namespace Player
 
             if (_spawnHandler == null) return;
 
-            Team team = playerDataMono.team;
+            Team team = playerDataMono.playerData.team;
 
             if (team == Team.Soldier)
                 MovePlayerToSpawnPoint(_spawnHandler.soldierSpawnPointContainer);

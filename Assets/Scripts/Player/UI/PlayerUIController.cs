@@ -157,7 +157,7 @@ namespace Player.UI
 
                     if (itemData == null) return;
 
-                    SetSlotIcon(i, itemData.itemIcon);
+                    SetSlotIcon(i, itemData.itemDataSettings.itemIcon);
                 }
 
             }

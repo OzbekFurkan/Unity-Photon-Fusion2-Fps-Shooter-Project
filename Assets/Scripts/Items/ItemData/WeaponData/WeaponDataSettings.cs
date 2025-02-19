@@ -8,6 +8,7 @@ namespace Item
     [CreateAssetMenu(menuName = "RAW/Interract/Weapon/WeaponDataSettings")]
     public class WeaponDataSettings : ItemDataSettings
     {
+        [Header("Weapon Settings")]
         public int ammo;
         public int fullAmmo;
         public WeaponShootSettings weaponShootSettings;

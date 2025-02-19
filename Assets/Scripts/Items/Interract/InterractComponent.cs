@@ -38,15 +38,13 @@ namespace Item.Interract
         }
         public override void Spawned()
         {
-            
             isPickupComplete = true;
             isDropComplete = true;
         }
         #endregion
 
         #region PICKUP_ITEM
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void PickUpItemRpc(PlayerRef newOwner, NetworkId parentNetworkObjectid)
+        public void PickUpItem(PlayerRef newOwner, NetworkId parentNetworkObjectid)
         {
             if (IsPickedUp || !isPickupComplete)
                 return;
@@ -54,7 +52,6 @@ namespace Item.Interract
             isPickupComplete = false;
             SetItemProps(newOwner, parentNetworkObjectid);
             SetWeaponTransformData(parentPlayerObject);
-            ToggleColliderIsTrigger(true);
             SendPickUpCallBack();
             isPickupComplete = true;
         }
@@ -62,6 +59,7 @@ namespace Item.Interract
         {
             IsPickedUp = true;
             ToggleRigidbodyIsKinematic(true);
+            ToggleColliderIsTrigger(true);
             isItemActive = true;
             parentPlayerObject = Runner.FindObject(parentNetworkObjectid).gameObject;
             Owner = parentPlayerObject.GetComponent<NetworkObject>();
@@ -72,35 +70,34 @@ namespace Item.Interract
             Debug.Log("pickup callback yolancak");
             PlayerInterractManager PIM = parentPlayerObject.GetComponent<PlayerInterractManager>();
             ItemDataMono itemDataMono = GetComponent<ItemDataMono>();
-            PIM.SendPickUpCallBackRpc(itemDataMono.itemId, Object.Id);
+            PIM.SendPickUpCallBack((int)itemDataMono.itemDataSettings.itemId, Object.Id);
         }
 
         private void SetWeaponTransformData(GameObject parent)
         {
             ItemDataMono itemDataMono = GetComponent<ItemDataMono>();
             parent.TryGetComponent<PlayerReferenceGetter>(out PlayerReferenceGetter playerReferenceGetter);
+
             if (playerReferenceGetter == null)
                 return;
 
             Transform weaponHolder = playerReferenceGetter.GetWeaponHolder();
 
-            parent.GetComponent<ItemSwitch>().SwitchSlot(itemDataMono.itemSlot);//change slot to possessed item's slot
-            transform.SetParent(weaponHolder.GetChild(itemDataMono.itemSlot));
+            parent.GetComponent<ItemSwitch>().SwitchSlot((int)itemDataMono.itemDataSettings.itemSlot);//change slot to possessed item's slot
+            transform.SetParent(weaponHolder.GetChild((int)itemDataMono.itemDataSettings.itemSlot));
             transform.localPosition = Vector3.zero;
             transform.localRotation = Quaternion.Euler(Vector3.zero);
         }
         #endregion
 
         #region DROP_ITEM
-        [Rpc(RpcSources.All, RpcTargets.StateAuthority)]
-        public void DropItemRpc()
+        public void DropItem()
         {
             if (!IsPickedUp || !isItemActive || !isDropComplete) return;
 
             isDropComplete = false;
             ResetItemProps();
             ThrowItem();
-            ToggleColliderIsTrigger(false);
             SendDropCallBack();
             parentPlayerObject = null;
             isDropComplete = true;
@@ -112,6 +109,7 @@ namespace Item.Interract
             transform.SetParent(FindObjectOfType<ParentSyncInScene>().transform);
             isItemActive = false;
             ToggleRigidbodyIsKinematic(false);
+            ToggleColliderIsTrigger(false);
             Object.RemoveInputAuthority();
         }
         private void ThrowItem()
@@ -122,7 +120,7 @@ namespace Item.Interract
         {
             PlayerInterractManager PIM = parentPlayerObject.GetComponent<PlayerInterractManager>();
             ItemDataMono itemDataMono = GetComponent<ItemDataMono>();
-            PIM.SendDropCallBackRpc(itemDataMono.itemId);
+            PIM.SendDropCallBack((int)itemDataMono.itemDataSettings.itemId);
         }
         #endregion
 

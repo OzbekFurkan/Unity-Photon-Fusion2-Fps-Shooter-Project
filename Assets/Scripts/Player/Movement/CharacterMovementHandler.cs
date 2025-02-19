@@ -59,6 +59,9 @@ namespace Player
             }
 
             KCC.Move(moveDirection * MovementSpeed, jumpImpulse);
+
+            var pitchRotation = KCC.GetLookRotation(true, false);
+            CameraPivot.localRotation = Quaternion.Euler(pitchRotation);
         }
 
         public void SetCharacterControllerEnabled(bool isEnabled)

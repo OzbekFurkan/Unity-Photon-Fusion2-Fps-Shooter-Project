@@ -13,6 +13,7 @@ namespace Player
 
         [Header("References")]
         public Transform playerModel;
+        public Transform _hitbox;
         public Camera minimapCamera;
 
         // Start is called before the first frame update
@@ -29,6 +30,9 @@ namespace Player
 
                 //Sets the layer of the local players model and our player model becomes visible for only remote players
                 Utility.SetRenderLayerInChildren(playerModel, LayerMask.NameToLayer("LocalPlayerModel"));
+
+                //Sets the layer of the hitbox so we can ignore our own hitbox while shooting
+                Utility.SetRenderLayerInChildren(_hitbox, LayerMask.NameToLayer("Ignore Raycast"));
 
                 Debug.Log("Spawned local player");
             }

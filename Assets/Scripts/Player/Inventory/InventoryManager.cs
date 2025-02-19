@@ -42,7 +42,7 @@ namespace Player.Inventory
         /// <returns>Returns true if the slot is available</returns>
         public bool SlotEmptyCheck(ItemDataMono itemData, GameObject weaponHolder)
         {
-            return !(weaponHolder.transform.GetChild(itemData.itemSlot).childCount > 0);
+            return !(weaponHolder.transform.GetChild((int)itemData.itemDataSettings.itemSlot).childCount > 0);
         }
 
         /// <summary>Clears all items from inventory.</summary>
@@ -89,20 +89,21 @@ namespace Player.Inventory
         {
             if (hpHandler.isDead == false) return;
 
+            if (Object.HasStateAuthority == false) return;
 
             for (int i = 0; i < weaponHolder.childCount; i++)
             {
                 weaponHolder.GetChild(i).gameObject.SetActive(true);
 
-                if (weaponHolder.GetChild(i).childCount <= 0) return;
+                if (weaponHolder.GetChild(i).childCount <= 0) continue;
 
                 GameObject item = weaponHolder.GetChild(i).GetChild(0).gameObject;
                 item.TryGetComponent<InterractComponent>(out var interactComponent);
 
-                if (interactComponent == null) return;
+                if (interactComponent == null) continue;
 
                 interactComponent.isItemActive = true;
-                interactComponent.DropItemRpc();
+                interactComponent.DropItem();
 
             }
 

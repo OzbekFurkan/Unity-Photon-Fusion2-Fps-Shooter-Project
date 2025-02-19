@@ -13,7 +13,7 @@ namespace Item
         [Header("Weapon References")]
         [SerializeField] private ItemReferenceGetter itemReferenceGetter;
         public WeaponDataSettings weaponDataSettings;
-        [HideInInspector] public WeaponShootSettings weaponShootSettings;
+        [HideInInspector] public WeaponShootSettings weaponShootSettings => weaponDataSettings.weaponShootSettings;
 
         //Network
         [Networked, HideInInspector] public int ammo { get; set; }
@@ -31,25 +31,16 @@ namespace Item
 
         public override void Spawned()
         {
+            SetItemDataSettings(weaponDataSettings);
 
-            SetBaseProps(weaponDataSettings.itemName,
-                (int)weaponDataSettings.itemId,
-                weaponDataSettings.itemPrefab,
-                weaponDataSettings.itemIcon,
-                (int)weaponDataSettings.itemSlot);
-
+            //we will change these values runtime so we store them seperetly from scriptable object
             ammo = weaponDataSettings.ammo;
             fullAmmo = weaponDataSettings.fullAmmo;
-            weaponShootSettings = weaponDataSettings.weaponShootSettings;
         }
 
-        protected override void SetBaseProps(string itemName, int itemId, GameObject itemPrefab, Sprite itemIcon, int itemSlot)
+        protected override void SetItemDataSettings(ItemDataSettings itemDataSettings)
         {
-            base.itemName = itemName;
-            base.itemId = itemId;
-            base.itemPrefab = itemPrefab;
-            base.itemIcon = itemIcon;
-            base.itemSlot = itemSlot;
+            base.itemDataSettings = itemDataSettings;
         }
 
         public Transform GetLeftHandTarget()

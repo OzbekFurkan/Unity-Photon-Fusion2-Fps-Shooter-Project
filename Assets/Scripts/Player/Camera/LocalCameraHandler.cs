@@ -21,7 +21,7 @@ namespace Player
             if (HasInputAuthority)
             {
                 // Set look rotation for Render.
-                KCC.SetLookRotation(_input.lookRotation, -90f, 90f);
+                KCC.SetLookRotation(_input.lookRotation, -85f, 85f);
             }
         }
 
@@ -42,6 +42,7 @@ namespace Player
             // Transfer rotation from weapon holder target to weapon holder.
             WeaponHolder.SetPositionAndRotation(WeaponHolderTarget.position, WeaponHolderTarget.rotation);
         }
+
     }
 }
 

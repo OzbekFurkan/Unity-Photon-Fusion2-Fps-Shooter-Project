@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 3018008584335487626}
   - component: {fileID: 2013144368046195734}
   - component: {fileID: 4887910890838528732}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Particle System Fire Gun
   m_TagString: IgnoreLayerChange
   m_Icon: {fileID: 0}

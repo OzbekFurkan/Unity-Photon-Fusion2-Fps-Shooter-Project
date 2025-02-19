@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8419798808933819481}
   - component: {fileID: 2027530331632279335}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: AmmoTrail
   m_TagString: Untagged
   m_Icon: {fileID: 0}

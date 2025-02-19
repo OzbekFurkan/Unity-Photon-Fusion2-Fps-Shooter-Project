@@ -7,6 +7,7 @@ using Item.Interract;
 using Item;
 using Item.Utils;
 using TMPro;
+using Fusion.Addons.SimpleKCC;
 using UnityEngine.UI;
 
 namespace Player.Interract
@@ -39,6 +40,9 @@ namespace Player.Interract
         #region PICKUP_DROP_CHECK
         public override void FixedUpdateNetwork()
         {
+            //pick up and drop processes have been done by state authority
+            if (!Object.HasStateAuthority) return;
+
             //getting input from network
             var input = GetInput<NetworkInputData>();
             ProcessInput(input.GetValueOrDefault(), _input.PreviousButtons);
@@ -69,7 +73,7 @@ namespace Player.Interract
                 if (interractComponent.isItemActive == false) continue;
 
                 StartInteractingState();
-                interractComponent.DropItemRpc();
+                interractComponent.DropItem();
 
                 return;//drop only one item at once
             }
@@ -87,9 +91,9 @@ namespace Player.Interract
                 Object.InputAuthority, out var detectedInfo, layerMask, HitOptions.IncludePhysX);
 
             //close item ui and return when no pickable item is hit
-            if(!isHit)
+            if (!isHit)
             {
-                CloseItemUI();
+                CloseItemUI_RPC();
                 return;
             }
             
@@ -102,7 +106,7 @@ namespace Player.Interract
             //close item ui and return if there is no interact component
             if (grabbedItem == null)
             {
-                CloseItemUI();
+                CloseItemUI_RPC();
                 return;
             }
             
@@ -115,7 +119,7 @@ namespace Player.Interract
             //close item ui and return if there is no item data component
             if (itemData == null)
             {
-                CloseItemUI();
+                CloseItemUI_RPC();
                 return;
             }
             
@@ -123,7 +127,7 @@ namespace Player.Interract
             if (inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
             {
                 //display item ui
-                OpenItemUI(grabbedItem, itemData.itemName, detectedInfo.Point);
+                OpenItemUI_RPC(grabbedItem, itemData.itemDataSettings.itemName, detectedInfo.Point);
 
                 //check input
                 if (input.Buttons.WasPressed(previousButtons, InputButton.PickUp))
@@ -135,13 +139,14 @@ namespace Player.Interract
 
             //display slot full warning on item ui if the slot is full
             else if (!inventoryManager.SlotEmptyCheck(itemData, weaponHolder))
-                OpenItemUI(grabbedItem, "Slot Full!", detectedInfo.Point);
+                OpenItemUI_RPC(grabbedItem, "Slot Full!", detectedInfo.Point);
 
         }
-        private void CloseItemUI()
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+        private void CloseItemUI_RPC()
         {
-            if (!Object.HasInputAuthority) return;
-
+            if (!HasInputAuthority) return;
+            
             InterractComponent[] allItems = GameObject.FindObjectsByType<InterractComponent>(FindObjectsSortMode.None);
             foreach (InterractComponent item in allItems)
             {
@@ -155,50 +160,50 @@ namespace Player.Interract
                     itemUI.SetActive(false);
             }
         }
-        private void OpenItemUI(InterractComponent grabbedItem, string message, Vector3 hitPoint)
+        [Rpc(RpcSources.StateAuthority, RpcTargets.InputAuthority)]
+        private void OpenItemUI_RPC(InterractComponent grabbedItem, string message, Vector3 hitPoint)
         {
-            if (!Object.HasInputAuthority) return;
+            if (!HasInputAuthority) return;
 
             //get item ui using item reference getter component reference
             ItemReferenceGetter itemReferenceGetter = grabbedItem.gameObject.GetComponent<ItemReferenceGetter>();
 
             if (itemReferenceGetter == null) return;
-
+            
             GameObject itemUI = itemReferenceGetter.ItemUiGetter();
 
             //item ui null check
             if (itemUI == null) return;
-
+            
             itemUI.SetActive(true);//enable item ui
             itemUI.transform.position = new Vector3(hitPoint.x, cameraHandle.transform.position.y-0.5f, hitPoint.z);
             itemUI.transform.LookAt(cameraHandle);//set its rotation toward our player
-
+            
             //try to get text ui element of grabbed item
             itemUI.transform.GetChild(0).gameObject.TryGetComponent<TextMeshProUGUI>(out TextMeshProUGUI itemNameText);
 
             //set the text if the text ui element is found
             if(itemNameText != null)
                 itemNameText.text = message;
-                
+
+            
         }
         private void HandlePickup(InterractComponent grabbedItem)
         {
             StartInteractingState();
-            grabbedItem.PickUpItemRpc(Object.InputAuthority, Object.Id);
+            grabbedItem.PickUpItem(Object.InputAuthority, Object.Id);
         }
         #endregion
 
         #region CALLBACKS
-        [Rpc(sources:RpcSources.StateAuthority, targets: RpcTargets.InputAuthority|RpcTargets.StateAuthority)]
-        public void SendPickUpCallBackRpc(int itemId, NetworkId networkId)
+        public void SendPickUpCallBack(int itemId, NetworkId networkId)
         {
             Debug.Log("pickup callback sent");
             inventoryManager.ItemPicked(itemId, networkId);
             TerminateInteractingState();
         }
 
-        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.InputAuthority | RpcTargets.StateAuthority)]
-        public void SendDropCallBackRpc(int itemId)
+        public void SendDropCallBack(int itemId)
         {
             inventoryManager.ItemDropped(itemId);
             TerminateInteractingState();

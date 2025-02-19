@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 2013144368046195734}
   - component: {fileID: 4887910890838528732}
   - component: {fileID: 8684275087058416854}
-  m_Layer: 0
+  m_Layer: 2
   m_Name: Particle System Death
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -17,8 +17,8 @@ namespace Item
         public bool isAuto;
 
         [Header("Recoil")]
-        [Tooltip("draw a  pattern in Window -> Recoil Pattern Drawer. it will be saved into Scripts -> Item -> Weapon -> " +
-            "Weapon -> Shoot -> Shoot Settings -> Recoil Pattern")]
+        [Tooltip("draw a  pattern in Window -> Recoil Pattern Drawer. it will be saved into Scripts -> Items -> Weapon -> " +
+            "Shoot -> Shoot Settings -> Recoil Pattern")]
         public RecoilPatternData recoilPattern;
         [Range(0,1)]
         public float recoilIntensity;

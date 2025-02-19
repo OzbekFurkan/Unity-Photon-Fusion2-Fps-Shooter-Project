@@ -172,7 +172,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.01, y: -0.06849024, z: -0.015}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.8851, y: 0.8851, z: 0.8851}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 7364850580841460660}
@@ -277,6 +277,7 @@ MonoBehaviour:
   weaponDataMono: {fileID: 2831380193057120408}
   aimPoint: {fileID: 8120879305032731904}
   animator: {fileID: 4759304372477817589}
+  _isFiring: 0
   fireParticleSystem: {fileID: 6063826860280628520}
 --- !u!114 &2831380193057120408
 MonoBehaviour:
@@ -290,14 +291,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfbb8ee60a3745148387d91aa587699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: 
-  itemId: 0
-  itemPrefab: {fileID: 5885649562666882474}
-  itemIcon: {fileID: 0}
-  itemSlot: 0
+  itemDataSettings: {fileID: 0}
   itemReferenceGetter: {fileID: 6671130654216905509}
   weaponDataSettings: {fileID: 11400000, guid: e11f1d16b03474367acf1e36152d91e0, type: 2}
-  weaponShootSettings: {fileID: 0}
   _ammo: 0
   _fullAmmo: 0
 --- !u!114 &7519246207031696649

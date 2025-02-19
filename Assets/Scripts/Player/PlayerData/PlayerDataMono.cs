@@ -25,29 +25,17 @@ namespace Player
 
         //player state
         [HideInInspector] public PlayerState playerState = PlayerState.Playing;
-        //player state stack to store recent states
+        //player state stack to store previous states
         [HideInInspector] public StateStack<PlayerState> playerStateStack = new StateStack<PlayerState>();
 
         public void Awake()
         {
-            SetBaseProps(playerDataSettings.itemName,
-                (int)playerDataSettings.itemId,
-                playerDataSettings.itemPrefab,
-                playerDataSettings.itemIcon,
-                (int)playerDataSettings.itemSlot);
+            SetItemDataSettings(playerDataSettings);
             
             HP = playerDataSettings.HP;
             team = playerDataSettings.team;
             startingHP = playerDataSettings.startingHP;
             playerStateStack.Add(playerState);
-        }
-        protected override void SetBaseProps(string itemName, int itemId, GameObject itemPrefab, Sprite itemIcon, int itemSlot)
-        {
-            base.itemName = itemName;
-            base.itemId = itemId;
-            base.itemPrefab = itemPrefab;
-            base.itemIcon = itemIcon;
-            base.itemSlot = itemSlot;
         }
 
         #region PLAYER_DATA_STRUCT_ACTIONS
@@ -57,6 +45,11 @@ namespace Player
                 return;
 
             InitializePlayerDataStructRpc(PlayerPrefs.GetString("username"));
+        }
+
+        protected override void SetItemDataSettings(ItemDataSettings itemDataSettings)
+        {
+            base.itemDataSettings = itemDataSettings;
         }
 
         [Rpc(sources:RpcSources.InputAuthority, targets:RpcTargets.StateAuthority)]

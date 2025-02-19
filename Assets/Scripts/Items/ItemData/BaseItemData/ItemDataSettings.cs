@@ -8,11 +8,12 @@ namespace Item
     public enum ItemSlot { Rifle, Pistol, Knife, Bomb, Other, None };
     public class ItemDataSettings : ScriptableObject
     {
+        [Header("Common Item Attributes")]
+        [Tooltip("If there is no proper option for you, you can add it into itemId enum in ItemDataSettings script")]
         public ItemId itemId;
-        [TextArea]
-        public string itemName;
+        [TextArea] public string itemName;
         public GameObject itemPrefab;
-        public ItemSlot itemSlot;
+        [Tooltip("If the item doesn't have a slot, then choose 'None'")] public ItemSlot itemSlot;
         public Sprite itemIcon;
     }
 

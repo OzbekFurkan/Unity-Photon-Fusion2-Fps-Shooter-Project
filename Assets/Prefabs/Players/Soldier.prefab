@@ -243,7 +243,7 @@ GameObject:
   m_Component:
   - component: {fileID: 3274692979701104196}
   - component: {fileID: 1411797522245260152}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: HitBox
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -280,7 +280,7 @@ MonoBehaviour:
   Type: 1
   SphereRadius: 0
   CapsuleRadius: 0
-  BoxExtents: {x: 0.5, y: 1, z: 0.5}
+  BoxExtents: {x: 0.35, y: 1, z: 0.22}
   CapsuleExtents: 0
   Offset: {x: 0, y: 0, z: 0}
   Root: {fileID: 1852728354347325528}
@@ -522,6 +522,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   playerModel: {fileID: 8054853945983303956}
+  _hitbox: {fileID: 3274692979701104196}
   minimapCamera: {fileID: 5851240862825117998}
 --- !u!114 &8954754819099828064
 MonoBehaviour:
@@ -582,10 +583,10 @@ MonoBehaviour:
   _settings:
     Shape: 1
     IsTrigger: 0
-    Radius: 0.5
+    Radius: 0.4
     Height: 1.5
     Extent: 0.035
-    ColliderLayer: 0
+    ColliderLayer: 2
     CollisionLayerMask:
       serializedVersion: 2
       m_Bits: 1153
@@ -693,11 +694,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a8acba30f359e4fa0924ec9d64ef9d76, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: 
-  itemId: 0
-  itemPrefab: {fileID: 4398370856537798957}
-  itemIcon: {fileID: 0}
-  itemSlot: 0
+  itemDataSettings: {fileID: 0}
   playerDataSettings: {fileID: 11400000, guid: ffdc8d8e5c4334f6eac45a5e56062112, type: 2}
   HP: 0
   team: 0
@@ -1884,9 +1881,9 @@ MonoBehaviour:
   Animator: {fileID: 931145539931278761}
   ApplyTiming: 2
   SyncSettings: 79
-  StateHashes: 000000007edb24cbfaf8f224a2732dcc2650fb232b1a167c794069552b7cf93b18cfdc0cf7d4f03cc467d50be7d27e8763f1a868dc6ddd88584e0b6728a981077af3fe2e
+  StateHashes: 000000007edb24cbfaf8f224a2732dcc2650fb2328a981077af3fe2e2b1a167c794069551c94b7a4f7573f59f2b5fcdde824c637
   TriggerHashes: 00000000
-  TotalWords: 4
+  TotalWords: 3
 --- !u!114 &4284947066604174554
 MonoBehaviour:
   m_ObjectHideFlags: 0

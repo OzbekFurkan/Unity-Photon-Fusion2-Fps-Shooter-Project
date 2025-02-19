@@ -10,7 +10,7 @@ using UnityEngine.UI;
 namespace GameModes.Modes
 {
     
-    public class Deathmatch : BaseGameMode
+    public sealed class Deathmatch : BaseGameMode
     {
         [Header("TeamScore")]
         [SerializeField] private TextMeshProUGUI teamScoreTextA;

@@ -10,6 +10,12 @@ namespace Item
 {
     public class ShootManager : NetworkBehaviour
     {
+        private struct ProjectileData : INetworkStruct
+        {
+            public Vector3 HitPosition;
+            public Vector3 HitNormal;
+        }
+
         [Header("References")]
         [SerializeField] private InterractComponent interractComponent;
         [SerializeField] private WeaponDataMono weaponDataMono;
@@ -29,6 +35,8 @@ namespace Item
         int visibleFireCount = 0;
         [Networked] int fireCount { get; set; }
         public ParticleSystem fireParticleSystem;
+        [Networked, Capacity(32)]
+        private NetworkArray<ProjectileData> _projectileData { get; }
 
         public override void Spawned()
         {
@@ -78,24 +86,31 @@ namespace Item
             //raycast parameters assigned
             float hitDistance = weaponDataMono.weaponShootSettings.hitDistance;
             LayerMask layerMask = weaponDataMono.weaponShootSettings.collisionLayers;
-
+            HitOptions hitOptions = HitOptions.IncludePhysX | HitOptions.IgnoreInputAuthority;
+            
             //player camera raycast
             bool isHit = Runner.LagCompensation.Raycast(playerCamera.position, aimVector, hitDistance, Object.InputAuthority,
-                out var detectedInfo, layerMask, HitOptions.IncludePhysX, QueryTriggerInteraction.Ignore);
+                out var detectedInfo, layerMask, hitOptions, QueryTriggerInteraction.Ignore);
 
-            //return if nothing is hit
-            if (!isHit) return;
+            Vector3 playercameraHitpoint;
+            float hitPointDistance;
 
-            Debug.DrawRay(aimPoint.position, aimVector*hitDistance, Color.green, 20f);
-
-            //player camera straight raycast results are stored in the variables below
-            Vector3 playercameraHitpoint = detectedInfo.Point;
-            float hitPointDistance = detectedInfo.Distance;
+            //if nothing is hit
+            if (!isHit)
+            {
+                playercameraHitpoint = playerCamera.position+aimVector*hitDistance;
+                hitPointDistance = hitDistance;
+            }
+            else
+            {
+                //player camera straight raycast results are stored in the variables below
+                playercameraHitpoint = detectedInfo.Point;
+                hitPointDistance = detectedInfo.Distance;
+            } 
             
-
             //get current recoil vector to be used in shoot vector calculations
             Vector2 currentRecoil = GetCurrentRecoilVector();
-
+            
             //recoil and distance factor added shoot vector is calculated based on player camera's raycast results
 
             //distace refactor to increase pattern scale in long distance
@@ -105,14 +120,15 @@ namespace Item
             //recoil offset vector is calculated to be added on the player camera shoot vector
             Vector3 recoilOffset = (playerCamera.right * currentRecoil.x + Quaternion.AngleAxis(playerCamera.transform.eulerAngles.x, playerCamera.right) * (-playerCamera.up * currentRecoil.y));
 
+            Vector3 dirToHit = playercameraHitpoint - aimPoint.position;
             //final shoot vector calculated with recoil offset and distance factor, then normalized
-            Vector3 shootvector = ((playercameraHitpoint - aimPoint.position) + recoilOffset * distanceRefactor).normalized;
+            Vector3 shootvector = (dirToHit + recoilOffset * distanceRefactor).normalized;
 
             //weapon raycast (final raycast)
             Runner.LagCompensation.Raycast(aimPoint.position, shootvector, hitDistance, Object.InputAuthority,
-                out var hitinfo, layerMask, HitOptions.IncludePhysX, QueryTriggerInteraction.Ignore);
+                out var hitinfo, layerMask, hitOptions, QueryTriggerInteraction.Ignore);
 
-            fireHitPoint = Vector3.zero;
+            fireHitPoint = aimPoint.position + shootvector * hitDistance;
             fireHitPointNormal = Vector3.zero;
 
             //player hit
@@ -124,6 +140,7 @@ namespace Item
                 fireHitPoint = hitinfo.Point;
                 fireHitPointNormal = hitinfo.Normal;
 
+                //hit damage
                 if (Object.HasStateAuthority)
                     hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(interractComponent.Owner.Id,
                                                                                 weaponDataMono.weaponShootSettings.hitDamage);
@@ -139,7 +156,13 @@ namespace Item
                 fireHitPointNormal = hitinfo.Normal;
             }
 
-            Debug.DrawRay(aimPoint.position, (hitinfo.Point-aimPoint.position), Color.red, 20f);
+            //store bullet data so we can access hit points while continuing to fire
+            //otherwise, we may lose bullet data if we shoot again before the shot is completed
+            _projectileData.Set(fireCount % _projectileData.Length, new ProjectileData()
+            {
+                HitPosition = fireHitPoint,
+                HitNormal = fireHitPointNormal
+            });
 
             //ammo decrement
             weaponDataMono.ammo--;
@@ -160,22 +183,28 @@ namespace Item
 
         private void ShowFireEffects()
         {
-            
-            if(weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Rifle)
+            if (weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Rifle)
                 animator.SetBool("shooting", isFiring);
 
             if (visibleFireCount < fireCount)
             {
                 fireParticleSystem.Play();
-
-                GameObject trailGO = Instantiate(weaponDataMono.weaponShootSettings.ammoTrail, aimPoint.position, Quaternion.identity);
-                trailGO.TryGetComponent<TrailRenderer>(out TrailRenderer trail);
-                if(trail)
-                {
-                    StartCoroutine(AnimateAmmoTrailToHitPoint(trail, trail.transform.position, fireHitPoint, fireHitPointNormal, trail.time));
-                }
             }
             
+            for (int i = visibleFireCount; i < fireCount; i++)
+            {
+                var data = _projectileData[i % _projectileData.Length];
+                
+                // Show projectile visuals (e.g. spawn dummy flying projectile or trail
+                // from fireTransform to data.HitPosition or spawn impact effect on data.HitPosition)
+                GameObject trailGO = Instantiate(weaponDataMono.weaponShootSettings.ammoTrail, aimPoint.position, Quaternion.identity);
+                trailGO.TryGetComponent<TrailRenderer>(out TrailRenderer trail);
+                if (trail)
+                {
+                    StartCoroutine(AnimateAmmoTrailToHitPoint(trail, trail.transform.position, data.HitPosition, data.HitNormal, trail.time));
+                }
+            }
+
             visibleFireCount = fireCount;
         }
         private IEnumerator AnimateAmmoTrailToHitPoint(TrailRenderer trail, Vector3 startPos, Vector3 hitPos, Vector3 hitNormal, float duration)

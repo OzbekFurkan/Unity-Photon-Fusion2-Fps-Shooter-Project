@@ -82,6 +82,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ddf1f31ea130842917d594f6aa1f0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _interract: {fileID: 1797113551092626966}
+  weaponData: {fileID: 6332640098777451399}
+  itemData: {fileID: 6332640098777451399}
+  _isFiring: 0
 --- !u!114 &2328024029999563519
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -96,6 +100,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interractComponent: {fileID: 1797113551092626966}
   weaponDataMono: {fileID: 6332640098777451399}
+  weaponInput: {fileID: 5996692989014561538}
   aimPoint: {fileID: 7374859847165471}
   animator: {fileID: 8587701276296903005}
   fireParticleSystem: {fileID: 2634062280194960951}
@@ -111,14 +116,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: edfbb8ee60a3745148387d91aa587699, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  itemName: 
-  itemId: 0
-  itemPrefab: {fileID: 2379902543376957109}
-  itemIcon: {fileID: 0}
-  itemSlot: 0
+  itemDataSettings: {fileID: 0}
   itemReferenceGetter: {fileID: 1856115094234837294}
   weaponDataSettings: {fileID: 11400000, guid: 4facfa1c6598449ebaeede26647bc055, type: 2}
-  weaponShootSettings: {fileID: 0}
   _ammo: 0
   _fullAmmo: 0
 --- !u!114 &1797113551092626966
@@ -139,7 +139,7 @@ MonoBehaviour:
   _isTriggerCol: 0
   _isItemActive: 0
   itemRigidbody: {fileID: 1691940674007094643}
-  boxCollider: {fileID: 3094727059586597539}
+  _collider: {fileID: 3094727059586597539}
   _isPickupComplete:
     _value: 0
   _isDropComplete:

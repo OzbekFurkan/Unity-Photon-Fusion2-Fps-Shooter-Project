@@ -5,7 +5,7 @@ using Item;
 
 namespace Item
 {    
-    [CreateAssetMenu(menuName = "RAW/Interract/Weapon/WeaponDataSettings")]
+    [CreateAssetMenu(menuName = "RAW/Data/Weapon/New Weapon Data")]
     public class WeaponDataSettings : ItemDataSettings
     {
         [Header("Weapon Settings")]

@@ -292,6 +292,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ddf1f31ea130842917d594f6aa1f0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _interract: {fileID: 5044460827865789689}
+  weaponData: {fileID: 653912256647317864}
+  itemData: {fileID: 653912256647317864}
+  _isFiring: 0
 --- !u!114 &9133276546424373264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -306,9 +310,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interractComponent: {fileID: 5044460827865789689}
   weaponDataMono: {fileID: 653912256647317864}
+  weaponInput: {fileID: 993518319454867949}
   aimPoint: {fileID: 6839582728444175600}
   animator: {fileID: 986025882614048616}
-  _isFiring: 0
   fireParticleSystem: {fileID: 8826833811451686104}
 --- !u!114 &653912256647317864
 MonoBehaviour:
@@ -345,7 +349,7 @@ MonoBehaviour:
   _isTriggerCol: 0
   _isItemActive: 0
   itemRigidbody: {fileID: 5299571491799619484}
-  boxCollider: {fileID: 8359678133616001100}
+  _collider: {fileID: 8359678133616001100}
   _isPickupComplete:
     _value: 0
   _isDropComplete:
@@ -525,6 +529,10 @@ PrefabInstance:
     - target: {fileID: 158110049807214381, guid: 78665ac738dc64a9c890233f1ac07af7, type: 3}
       propertyPath: m_Name
       value: ItemCanvas
+      objectReference: {fileID: 0}
+    - target: {fileID: 158110049807214381, guid: 78665ac738dc64a9c890233f1ac07af7, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5207033954761896757, guid: 78665ac738dc64a9c890233f1ac07af7, type: 3}
       propertyPath: m_Pivot.x

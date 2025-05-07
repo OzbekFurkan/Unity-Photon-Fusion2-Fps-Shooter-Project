@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc1a1a7a94767492fb1b2700b421a85a, type: 3}
+  m_Name: Granade
+  m_EditorClassIdentifier: 
+  itemId: 5
+  itemName: Granade
+  itemPrefab: {fileID: 6414224034077834256, guid: ff38612af5e9f47869f14c6f1ec67e42, type: 3}
+  itemSlot: 3
+  itemIcon: {fileID: 21300000, guid: a1ec0540dca5a480e8db1456bfc41013, type: 3}
+  throwForce: 30
+  explosionParticle: {fileID: 6275381723303853007, guid: af690a552f305477a9550f7d0954b16f, type: 3}
+  impactRadius: 5
+  layerMask:
+    serializedVersion: 2
+    m_Bits: 385
+  hitDamage: 50

@@ -112,6 +112,8 @@ namespace GameModes.Common
             if (runner.IsServer)
             {
                 await runner.LoadScene(sceneName);
+                NetworkObject[] _no = FindObjectsOfType<NetworkObject>();
+                runner.RegisterSceneObjects(SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex), _no);
             }
             
         }

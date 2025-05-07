@@ -7,7 +7,7 @@ namespace Player
 {
     public enum Team { Soldier, Alien }
 
-    [CreateAssetMenu(menuName = "RAW/Interract/Player/PlayerDataSettings")]
+    [CreateAssetMenu(menuName = "RAW/Data/Player/New Player Data")]
     public class PlayerDataSettings : ItemDataSettings
     {
         public Team team;

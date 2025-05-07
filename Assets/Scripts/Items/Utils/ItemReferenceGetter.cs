@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using Fusion;
 
 
-namespace Item.Utils
+namespace Item
 {
     public class ItemReferenceGetter : MonoBehaviour
     {

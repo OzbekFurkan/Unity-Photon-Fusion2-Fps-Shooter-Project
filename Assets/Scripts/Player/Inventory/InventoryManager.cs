@@ -16,7 +16,7 @@ namespace Player.Inventory
         [SerializeField] private ItemSwitch itemSwitch;
         [SerializeField] private Transform weaponHolder;
 
-        [Networked, OnChangedRender(nameof(OnInventoryChanged))]
+        [Networked, OnChangedRender(nameof(OnInventoryChanged)), Capacity(4)]
         public NetworkDictionary<int, NetworkId> inventory { get; } = new NetworkDictionary<int, NetworkId>();
 
         #region NETWORK_SYNC

@@ -23,7 +23,7 @@ namespace Item.Interract
 
         [Header("Components")]
         [SerializeField] Rigidbody itemRigidbody;
-        [SerializeField] BoxCollider boxCollider;
+        [SerializeField] Collider _collider;
 
         //Mutex Flags
         [Networked, HideInInspector] public NetworkBool isPickupComplete { get; set; }
@@ -34,7 +34,7 @@ namespace Item.Interract
         public void OnPickUpStateChange()
         {
             itemRigidbody.isKinematic = isKinematicRig;
-            boxCollider.isTrigger = isTriggerCol;
+            _collider.isTrigger = isTriggerCol;
         }
         public override void Spawned()
         {
@@ -91,13 +91,13 @@ namespace Item.Interract
         #endregion
 
         #region DROP_ITEM
-        public void DropItem()
+        public void DropItem(float throwForce = 1f)
         {
             if (!IsPickedUp || !isItemActive || !isDropComplete) return;
 
             isDropComplete = false;
             ResetItemProps();
-            ThrowItem();
+            ThrowItem(throwForce);
             SendDropCallBack();
             parentPlayerObject = null;
             isDropComplete = true;
@@ -112,9 +112,9 @@ namespace Item.Interract
             ToggleColliderIsTrigger(false);
             Object.RemoveInputAuthority();
         }
-        private void ThrowItem()
+        private void ThrowItem(float throwForce = 1f)
         {
-            itemRigidbody.AddForce(transform.forward, ForceMode.Impulse);
+            itemRigidbody.AddForce(transform.forward * throwForce, ForceMode.Impulse);
         }
         private void SendDropCallBack()
         {
@@ -131,7 +131,7 @@ namespace Item.Interract
         }
         private void ToggleColliderIsTrigger(bool current)
         {
-            boxCollider.isTrigger = current;
+            _collider.isTrigger = current;
             isTriggerCol = current;
         }
 

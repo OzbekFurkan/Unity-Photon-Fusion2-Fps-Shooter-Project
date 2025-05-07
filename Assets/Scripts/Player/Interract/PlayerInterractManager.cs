@@ -5,7 +5,6 @@ using Fusion;
 using Player.Inventory;
 using Item.Interract;
 using Item;
-using Item.Utils;
 using TMPro;
 using Fusion.Addons.SimpleKCC;
 using UnityEngine.UI;
@@ -64,17 +63,18 @@ namespace Player.Interract
         {
             foreach (GameObject item in inventoryManager.GetAllItemObjects())
             {
+                Debug.Log("dropping..");
                 InterractComponent interractComponent = item.GetComponent<InterractComponent>();
 
                 //return if interact component is null
                 if (interractComponent == null) continue;
-
+                Debug.Log("dropping....");
                 //do not drop item if it is not our current item
                 if (interractComponent.isItemActive == false) continue;
-
+                Debug.Log("dropping.........");
                 StartInteractingState();
                 interractComponent.DropItem();
-
+                Debug.Log("!!dropping.........");
                 return;//drop only one item at once
             }
         }

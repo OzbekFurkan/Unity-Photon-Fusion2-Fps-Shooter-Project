@@ -8,7 +8,7 @@ using Player.Utils;
 
 namespace Item
 {
-    public class ShootManager : NetworkBehaviour
+    public class ShootManager : NetworkBehaviour, IShootable
     {
         private struct ProjectileData : INetworkStruct
         {
@@ -19,12 +19,12 @@ namespace Item
         [Header("References")]
         [SerializeField] private InterractComponent interractComponent;
         [SerializeField] private WeaponDataMono weaponDataMono;
+        [SerializeField] private WeaponInput weaponInput;
         [SerializeField] private Transform aimPoint;
         [SerializeField] private Animator animator;
 
         [Header("Fire Datas")]
         float lastTimeFired = 0;
-        [Networked] public bool isFiring { get; set; } = false;
         [Networked] Vector3 fireHitPoint { get; set; }
         [Networked] Vector3 fireHitPointNormal { get; set; }
 
@@ -46,35 +46,8 @@ namespace Item
         #region FIRE_ACTION
         public void Fire(Vector3 aimVector)
         {
-            //Limit fire rate
-            if (Time.time - lastTimeFired < 0.15f) return;
+            if (CheckShootAvailability() == false) return;
 
-            //reset recoil index if 0.5 second passed since last time fired
-            else if (Time.time - lastTimeFired > 0.5f)
-                currentRecoilIndex = 0;
-
-            //reset last time fired
-            lastTimeFired = Time.time;
-
-            //owner null check
-            if (interractComponent.Owner == null) return;
-
-            //get player data
-            interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
-
-            //player data null check
-            if (playerData == null) return;
-
-            //reload check
-            if (weaponDataMono.ammo <= 0)
-            {
-                //reload if not already reloading and have magazin to reload
-                if(playerData.playerState != PlayerState.Reloading && weaponDataMono.fullAmmo > 0)
-                    StartCoroutine(Reload(playerData));
-
-                return;//return if already reloading or after reload or not have a magazin to reload
-            }
-            
             //get player reference getter to get player camera
             interractComponent.Owner.gameObject.TryGetComponent<PlayerReferenceGetter>
                 (out PlayerReferenceGetter playerReferenceGetter);
@@ -176,6 +149,40 @@ namespace Item
 
         }
 
+        private bool CheckShootAvailability()
+        {
+            //Limit fire rate
+            if (Time.time - lastTimeFired < 0.15f) return false;
+
+            //reset recoil index if 0.5 second passed since last time fired
+            else if (Time.time - lastTimeFired > 0.5f)
+                currentRecoilIndex = 0;
+
+            //reset last time fired
+            lastTimeFired = Time.time;
+
+            //owner null check
+            if (interractComponent.Owner == null) return false;
+
+            //get player data
+            interractComponent.Owner.gameObject.TryGetComponent<PlayerDataMono>(out PlayerDataMono playerData);
+
+            //player data null check
+            if (playerData == null) return false;
+
+            //reload check
+            if (weaponDataMono.ammo <= 0)
+            {
+                //reload if not already reloading and have magazin to reload
+                if (playerData.playerState != PlayerState.Reloading && weaponDataMono.fullAmmo > 0)
+                    StartCoroutine(Reload(playerData));
+
+                return false;//return if already reloading or after reload or not have a magazin to reload
+            }
+
+            return true;
+        }
+
         public override void Render()
         {
             ShowFireEffects();
@@ -184,7 +191,7 @@ namespace Item
         private void ShowFireEffects()
         {
             if (weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Rifle)
-                animator.SetBool("shooting", isFiring);
+                animator.SetBool("shooting", weaponInput.isFiring);
 
             if (visibleFireCount < fireCount)
             {

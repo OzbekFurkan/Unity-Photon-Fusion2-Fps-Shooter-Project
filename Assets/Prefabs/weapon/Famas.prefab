@@ -261,6 +261,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ddf1f31ea130842917d594f6aa1f0b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _interract: {fileID: 7519246207031696649}
+  weaponData: {fileID: 2831380193057120408}
+  itemData: {fileID: 2831380193057120408}
+  _isFiring: 0
 --- !u!114 &5829863897402436064
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -275,9 +279,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interractComponent: {fileID: 7519246207031696649}
   weaponDataMono: {fileID: 2831380193057120408}
+  weaponInput: {fileID: 2562991662950299677}
   aimPoint: {fileID: 8120879305032731904}
   animator: {fileID: 4759304372477817589}
-  _isFiring: 0
   fireParticleSystem: {fileID: 6063826860280628520}
 --- !u!114 &2831380193057120408
 MonoBehaviour:
@@ -314,7 +318,7 @@ MonoBehaviour:
   _isTriggerCol: 0
   _isItemActive: 0
   itemRigidbody: {fileID: 7481570533478448748}
-  boxCollider: {fileID: 6510997848049035708}
+  _collider: {fileID: 6510997848049035708}
   _isPickupComplete:
     _value: 0
   _isDropComplete:

@@ -12,16 +12,17 @@ namespace Item
     public class WeaponInput : NetworkBehaviour
     {
         GameObject owner = null;
-        private ShootManager shootManager;
-        private InterractComponent _interract;
-        private WeaponDataMono weaponData;
+        private IShootable shootManager;
+        [SerializeField] private InterractComponent _interract;
+        [SerializeField] private WeaponDataMono weaponData;
+        [SerializeField] private ItemDataMono itemData;
         private CharacterInputHandler _input;
+
+        [Networked, HideInInspector] public bool isFiring { get; set; } = false;
 
         private void Awake()
         {
-            shootManager = GetComponent<ShootManager>();
-            _interract = GetComponent<InterractComponent>();
-            weaponData = GetComponent<WeaponDataMono>();
+            shootManager = GetComponent<IShootable>();
         }
 
         public override void FixedUpdateNetwork()
@@ -29,6 +30,9 @@ namespace Item
 
             if (_interract.Owner != null)
                 owner = _interract.Owner.gameObject;
+
+            else
+                owner = null;
 
             if (owner != null)
                 _input = owner.GetComponent<CharacterInputHandler>();
@@ -55,18 +59,27 @@ namespace Item
             //calculate shoot direction
             Vector3 aimForward = owner.GetComponent<PlayerReferenceGetter>().GetPlayerCameraHandle().transform.forward;
 
+            if ((itemData.itemDataSettings.itemSlot == ItemSlot.Bomb || itemData.itemDataSettings.itemSlot==ItemSlot.Knife) &&
+                input.Buttons.WasPressed(previousButtons, InputButton.Fire))
+            {
+                shootManager.Fire(aimForward);
+                return;
+            }
+            else if (itemData.itemDataSettings.itemSlot == ItemSlot.Bomb || itemData.itemDataSettings.itemSlot == ItemSlot.Knife)
+                return;
+
             //non-auto shoot
             if (!weaponData.weaponShootSettings.isAuto && input.Buttons.WasPressed(previousButtons, InputButton.Fire))
                 shootManager.Fire(aimForward);
 
             //auto shoot input
             else if (weaponData.weaponShootSettings.isAuto && input.Buttons.WasPressed(previousButtons, InputButton.Fire))
-                shootManager.isFiring = true;
+                isFiring = true;
             else if (weaponData.weaponShootSettings.isAuto && input.Buttons.WasReleased(previousButtons, InputButton.Fire))
-                shootManager.isFiring = false;
+                isFiring = false;
 
             //auto shooting
-            if(shootManager.isFiring)
+            if(isFiring)
                 shootManager.Fire(aimForward);
         }
 

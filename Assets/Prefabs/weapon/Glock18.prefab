@@ -114,7 +114,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _interract: {fileID: 2595150212352237699}
-  weaponData: {fileID: 6332640098777451399}
   itemData: {fileID: 6332640098777451399}
   _isFiring: 0
 --- !u!114 &2328024029999563519
@@ -131,7 +130,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interractComponent: {fileID: 2595150212352237699}
   weaponDataMono: {fileID: 6332640098777451399}
-  weaponInput: {fileID: 5996692989014561538}
+  itemInput: {fileID: 5996692989014561538}
   aimPoint: {fileID: 7374859847165471}
   animator: {fileID: 8283079422151409548}
   fireParticleSystem: {fileID: 2634062280194960951}

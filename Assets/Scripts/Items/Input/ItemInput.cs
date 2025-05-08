@@ -9,15 +9,15 @@ using Item.Interract;
 
 namespace Item
 {
-    public class WeaponInput : NetworkBehaviour
+    public class ItemInput : NetworkBehaviour
     {
         GameObject owner = null;
         private IShootable shootManager;
         [SerializeField] private InterractComponent _interract;
-        [SerializeField] private WeaponDataMono weaponData;
         [SerializeField] private ItemDataMono itemData;
         private CharacterInputHandler _input;
 
+        //auto shoot flag
         [Networked, HideInInspector] public bool isFiring { get; set; } = false;
 
         private void Awake()
@@ -50,36 +50,57 @@ namespace Item
             if (!_interract.isItemActive)
                 return;
 
+            // Get references
+            owner.TryGetComponent<PlayerReferenceGetter>(out PlayerReferenceGetter playerReferenceGetter);
+            if (playerReferenceGetter == null) return;
+
             // Update camera pivot so fire transform (CameraHandle) is correct
-            SimpleKCC KCC = owner.GetComponent<PlayerReferenceGetter>().GetPlayerKCC();
-            Transform CameraPivot = owner.GetComponent<PlayerReferenceGetter>().GetPlayerCameraPivot();
+            SimpleKCC KCC = playerReferenceGetter.GetPlayerKCC();
+            Transform CameraPivot = playerReferenceGetter.GetPlayerCameraPivot();
             var pitchRotation = KCC.GetLookRotation(true, false);
             CameraPivot.localRotation = Quaternion.Euler(pitchRotation);
 
             //calculate shoot direction
             Vector3 aimForward = owner.GetComponent<PlayerReferenceGetter>().GetPlayerCameraHandle().transform.forward;
 
-            if ((itemData.itemDataSettings.itemSlot == ItemSlot.Bomb || itemData.itemDataSettings.itemSlot==ItemSlot.Knife) &&
-                input.Buttons.WasPressed(previousButtons, InputButton.Fire))
+            SelectProperInput(input, previousButtons, aimForward);
+            
+        }
+
+        private void SelectProperInput(NetworkInputData input, NetworkButtons previousButtons, Vector3 aimForward)
+        {
+            TryGetComponent<WeaponDataMono>(out WeaponDataMono weaponDataMono);
+            if (weaponDataMono != null)
             {
-                shootManager.Fire(aimForward);
+                bool _isAuto = weaponDataMono.weaponDataSettings.weaponShootSettings.isAuto;
+                if (_isAuto)
+                    HandleAutoInput(input, previousButtons, aimForward);
+                else
+                    HandleNonAutoInput(input, previousButtons, aimForward);
+
                 return;
             }
-            else if (itemData.itemDataSettings.itemSlot == ItemSlot.Bomb || itemData.itemDataSettings.itemSlot == ItemSlot.Knife)
-                return;
 
+            HandleNonAutoInput(input, previousButtons, aimForward);
+            
+        }
+
+        private void HandleNonAutoInput(NetworkInputData input, NetworkButtons previousButtons, Vector3 aimForward)
+        {
             //non-auto shoot
-            if (!weaponData.weaponShootSettings.isAuto && input.Buttons.WasPressed(previousButtons, InputButton.Fire))
+            if (input.Buttons.WasPressed(previousButtons, InputButton.Fire))
                 shootManager.Fire(aimForward);
-
+        }
+        private void HandleAutoInput(NetworkInputData input, NetworkButtons previousButtons, Vector3 aimForward)
+        {
             //auto shoot input
-            else if (weaponData.weaponShootSettings.isAuto && input.Buttons.WasPressed(previousButtons, InputButton.Fire))
+            if (input.Buttons.WasPressed(previousButtons, InputButton.Fire))
                 isFiring = true;
-            else if (weaponData.weaponShootSettings.isAuto && input.Buttons.WasReleased(previousButtons, InputButton.Fire))
+            else if (input.Buttons.WasReleased(previousButtons, InputButton.Fire))
                 isFiring = false;
 
             //auto shooting
-            if(isFiring)
+            if (isFiring)
                 shootManager.Fire(aimForward);
         }
 

@@ -19,7 +19,7 @@ namespace Item
         [Header("References")]
         [SerializeField] private InterractComponent interractComponent;
         [SerializeField] private WeaponDataMono weaponDataMono;
-        [SerializeField] private WeaponInput weaponInput;
+        [SerializeField] private ItemInput itemInput;
         [SerializeField] private Transform aimPoint;
         [SerializeField] private Animator animator;
 
@@ -143,7 +143,7 @@ namespace Item
             //fire count incerement, we will compare it with the local one and show fire effect once for each player in Render
             fireCount++;
 
-            //for non-auto
+            //for pistol (non-auto)
             if (weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Pistol)
                 animator.SetTrigger("shooting");
 
@@ -191,7 +191,7 @@ namespace Item
         private void ShowFireEffects()
         {
             if (weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Rifle)
-                animator.SetBool("shooting", weaponInput.isFiring);
+                animator.SetBool("shooting", itemInput.isFiring);
 
             if (visibleFireCount < fireCount)
             {

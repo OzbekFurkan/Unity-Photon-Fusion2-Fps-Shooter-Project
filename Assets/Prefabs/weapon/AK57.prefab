@@ -310,7 +310,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   interractComponent: {fileID: 5044460827865789689}
   weaponDataMono: {fileID: 653912256647317864}
-  weaponInput: {fileID: 993518319454867949}
+  itemInput: {fileID: 993518319454867949}
   aimPoint: {fileID: 6839582728444175600}
   animator: {fileID: 986025882614048616}
   fireParticleSystem: {fileID: 8826833811451686104}

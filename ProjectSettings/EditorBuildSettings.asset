@@ -11,5 +11,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/IceWorld.unity
     guid: df47dc6b6da325341a96cb0b5be04a50
+  - enabled: 1
+    path: Assets/Scenes/Garage.unity
+    guid: 6b23aff1f13bf44e8aadc6e4c6647dbe
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: d50fe191691a34c77a9aa9743563c7cc, type: 2}

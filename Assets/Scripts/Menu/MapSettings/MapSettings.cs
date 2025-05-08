@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Menu
 {
-    public enum Map { IceWorld, Skybox };
+    public enum Map { IceWorld, Garage };
 
     [CreateAssetMenu(menuName = "RAW/Menu/MapSettings")]
     public class MapSettings : ScriptableObject

@@ -13,6 +13,7 @@ namespace Player
         public Team team;
         public byte HP;
         public byte startingHP;
+        public bool isBot;
     }
 
 }

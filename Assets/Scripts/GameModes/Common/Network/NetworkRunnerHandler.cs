@@ -92,6 +92,7 @@ namespace GameModes.Common
 
         async void StartGame(NetworkRunner runner, GameMode gameMode, string roomName, string sceneName, int maxPlayers)
         {
+            
             ToggleStatusPanel();//loading on
 
             var sceneManager = GetSceneManager(runner);
@@ -107,11 +108,13 @@ namespace GameModes.Common
                 SessionProperties = sessionProps,
                 PlayerCount = maxPlayers
             });
-
+            
             ToggleStatusPanel();//loading off
+            
             if (runner.IsServer)
             {
                 await runner.LoadScene(sceneName);
+                
                 NetworkObject[] _no = FindObjectsOfType<NetworkObject>();
                 runner.RegisterSceneObjects(SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex), _no);
             }
@@ -125,7 +128,7 @@ namespace GameModes.Common
         {
             if (menuLifeCycleHandler == null)
                 return;
-
+            
             menuLifeCycleHandler.statusPanel.SetActive(!menuLifeCycleHandler.statusPanel.activeSelf);
 
         }

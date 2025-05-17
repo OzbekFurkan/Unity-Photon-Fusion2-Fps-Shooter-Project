@@ -29,6 +29,9 @@ namespace Player
         public GameObject playerModel;//our model will be invisible when died and will be visible when revieved
         public GameObject deathGameObjectPrefab;//particle effect to play when died
 
+        //teleport position when player died
+        private Vector3? pendingTeleportPosition;
+
         public override void Spawned()
         {
             //set starting hp
@@ -40,6 +43,15 @@ namespace Player
             //read networked hp and assign it to player data hp
             playerDataMono.HP = HP;
 
+            //set position takes a bit time to complete (triggering by input is not enough),
+            //therefore we need to handle it from fixedupdatenetwork
+            if (pendingTeleportPosition.HasValue)
+            {
+                // Forcefully update KCC position BEFORE any movement/input logic
+                KCC.SetPosition(pendingTeleportPosition.Value);
+                pendingTeleportPosition = null;
+            }
+
             //Check if we've fallen off the world.
             CheckFallRespawn();
         }
@@ -50,7 +62,7 @@ namespace Player
 
             if (!Object.HasStateAuthority) return;
 
-            Respawn();
+            StartCoroutine(RequestRespawn());
         }
 
         #region DEAD_AND_REVIVE_STATE_REMOTE
@@ -166,24 +178,14 @@ namespace Player
 
             Team team = playerDataMono.playerData.team;
 
-            if (team == Team.Soldier)
-                MovePlayerToSpawnPoint(_spawnHandler.soldierSpawnPointContainer);
-
-            else
-                MovePlayerToSpawnPoint(_spawnHandler.alienSpawnPointContainer);
+            MovePlayerToSpawnPoint(_spawnHandler.GetSpawnPoint(team));
 
             OnRespawned();
         }
 
-        private void MovePlayerToSpawnPoint(Transform spawnPointContainer)
+        private void MovePlayerToSpawnPoint(Vector3 spawnPoint)
         {
-            int pointAmount = spawnPointContainer.childCount;
-
-            int randomPointIndex = Random.Range(0, pointAmount);
-
-            Vector3 spawnPoint = spawnPointContainer.GetChild(randomPointIndex).position;
-
-            KCC.SetPosition(spawnPoint);
+            pendingTeleportPosition = spawnPoint;
         }
 
         private void SetPlayerPropsToBeSync(bool state)

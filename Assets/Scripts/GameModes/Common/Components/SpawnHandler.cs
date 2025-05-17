@@ -45,13 +45,13 @@ namespace GameModes.Common
                 Player.NetworkPlayer spawnedPlayer;
                 if (selectedTeam == (int)Team.Soldier)
                 {
-                    spawnedPlayer = runner.Spawn(SoldierPlayerPrefab, GetSpawnPoint(), Quaternion.identity, player);
+                    spawnedPlayer = runner.Spawn(SoldierPlayerPrefab, GetSpawnPoint(Team.Soldier), Quaternion.identity, player);
                     selectedTeam = (int)Team.Alien;
                     runner.SetPlayerObject(player, spawnedPlayer.Object);
                 }
                 else
                 {
-                    spawnedPlayer = runner.Spawn(AlienPlayerPrefab, GetSpawnPoint(), Quaternion.identity, player);
+                    spawnedPlayer = runner.Spawn(AlienPlayerPrefab, GetSpawnPoint(Team.Alien), Quaternion.identity, player);
                     selectedTeam = (int)Team.Soldier;
                     runner.SetPlayerObject(player, spawnedPlayer.Object);
                 } 
@@ -61,9 +61,9 @@ namespace GameModes.Common
         }
 
         /// <summary>Returns a random spawn point. Team sensitive.</summary>
-        public Vector3 GetSpawnPoint()
+        public Vector3 GetSpawnPoint(Team team)
         {
-            if(selectedTeam == (int)Team.Soldier)
+            if(team == (int)Team.Soldier)
             {
                 int i = Random.Range(0, soldierSpawnPointContainer.childCount);
                 return soldierSpawnPointContainer.GetChild(i).position;
@@ -71,7 +71,7 @@ namespace GameModes.Common
             else
             {
                 int i = Random.Range(0, alienSpawnPointContainer.childCount);
-                return soldierSpawnPointContainer.GetChild(i).position;
+                return alienSpawnPointContainer.GetChild(i).position;
             }
         }
 

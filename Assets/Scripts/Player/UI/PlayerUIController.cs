@@ -55,7 +55,7 @@ namespace Player.UI
             playerUI.alpha = 1;
             InitializeReferences();
 
-            //null check of references
+            //references null check
             if (playerDataMono == null || itemSwitch == null || hpHandler == null ||
                 weaponHolder == null || weaponHolder == null) return;
 

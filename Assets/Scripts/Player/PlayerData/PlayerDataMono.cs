@@ -13,12 +13,13 @@ namespace Player
     public class PlayerDataMono : ItemDataMono
     {
         //scriptable object that hold various player data to be read
-        [SerializeField] PlayerDataSettings playerDataSettings;
+        [SerializeField] private PlayerDataSettings playerDataSettings;
 
         //player props to be assigned by player data settings (scriptable object)
         [HideInInspector] public byte HP;
         [HideInInspector] public Team team;
         [HideInInspector] public byte startingHP;
+        [HideInInspector] public bool isBot;
 
         //needed for ui
         [Networked, HideInInspector] public ref PlayerDataStruct playerData => ref MakeRef<PlayerDataStruct>();
@@ -35,6 +36,7 @@ namespace Player
             HP = playerDataSettings.HP;
             team = playerDataSettings.team;
             startingHP = playerDataSettings.startingHP;
+            isBot = playerDataSettings.isBot;
             playerStateStack.Add(playerState);
         }
 
@@ -44,7 +46,8 @@ namespace Player
             if (!Object.HasInputAuthority)
                 return;
 
-            InitializePlayerDataStructRpc(PlayerPrefs.GetString("username"));
+            InitializePlayerDataStructRpc(PlayerPrefs.GetString("username")!=null?
+                PlayerPrefs.GetString("username") : "Bot " +UnityEngine.Random.Range(0,100));
         }
 
         protected override void SetItemDataSettings(ItemDataSettings itemDataSettings)

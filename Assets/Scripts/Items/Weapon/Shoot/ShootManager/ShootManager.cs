@@ -137,11 +137,15 @@ namespace Item
                 HitNormal = fireHitPointNormal
             });
 
-            //ammo decrement
-            weaponDataMono.ammo--;
+            //ammo must be reduced only once by host
+            if(Object.HasStateAuthority)
+            {
+                //ammo decrement
+                weaponDataMono.ammo--;
 
-            //fire count incerement, we will compare it with the local one and show fire effect once for each player in Render
-            fireCount++;
+                //fire count incerement, we will compare it with the local one and show fire effect once for each player in Render
+                fireCount++;
+            }
 
             //for pistol (non-auto)
             if (weaponDataMono.itemDataSettings.itemSlot == ItemSlot.Pistol)

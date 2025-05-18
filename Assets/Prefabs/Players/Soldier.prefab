@@ -699,6 +699,7 @@ MonoBehaviour:
   HP: 0
   team: 0
   startingHP: 0
+  isBot: 0
   playerState: 0
 --- !u!114 &6863025440145560926
 MonoBehaviour:

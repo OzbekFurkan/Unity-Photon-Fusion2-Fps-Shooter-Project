@@ -85,6 +85,13 @@ namespace Item
                     transform.position, transform.rotation);
 
                 Destroy(particle.gameObject, bombDataMono.bombDataSettings.explosionParticle.main.duration);
+
+                if(Object.HasStateAuthority)
+                {
+                    Runner.Despawn(Object);
+                    return;
+                }
+                    
             }
 
             visibleFireCount = fireCount;

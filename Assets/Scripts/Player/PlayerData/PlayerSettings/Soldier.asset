@@ -20,3 +20,4 @@ MonoBehaviour:
   team: 0
   HP: 100
   startingHP: 100
+  isBot: 0

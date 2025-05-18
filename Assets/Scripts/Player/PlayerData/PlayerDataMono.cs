@@ -19,7 +19,6 @@ namespace Player
         [HideInInspector] public byte HP;
         [HideInInspector] public Team team;
         [HideInInspector] public byte startingHP;
-        [HideInInspector] public bool isBot;
 
         //needed for ui
         [Networked, HideInInspector] public ref PlayerDataStruct playerData => ref MakeRef<PlayerDataStruct>();
@@ -36,7 +35,6 @@ namespace Player
             HP = playerDataSettings.HP;
             team = playerDataSettings.team;
             startingHP = playerDataSettings.startingHP;
-            isBot = playerDataSettings.isBot;
             playerStateStack.Add(playerState);
         }
 

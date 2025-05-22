@@ -5,7 +5,7 @@ These items can be picked up and thrown by players. The items of dead players fa
 
 !! You should add your own photon file and set your api key to run this project. 
 
-!! Also You should include Network Rigidbody Add-On from photonnetwork website -> documentaion -> addon -> physics
+!! Also You should include Network Rigidbody Add-On from photonnetwork website -> documentation -> addon -> physics
 
 The images of the game are given below.
 

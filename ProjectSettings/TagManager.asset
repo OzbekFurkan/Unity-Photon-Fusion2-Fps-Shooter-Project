@@ -17,11 +17,11 @@ TagManager:
   - HitBox
   - Minimap
   - PlayerModel
-  - 
-  - 
-  - 
-  - 
-  - 
+  - hitbox_head
+  - hitbox_body
+  - hitbox_arm
+  - hitbox_leg
+  - hitbox_foot
   - 
   - 
   - 

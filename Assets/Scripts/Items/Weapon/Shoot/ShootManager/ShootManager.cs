@@ -114,9 +114,28 @@ namespace Item
                 fireHitPointNormal = hitinfo.Normal;
 
                 //hit damage
+                byte hitDamage = weaponDataMono.weaponShootSettings.hitDamage;
+
+                if (LayerMask.NameToLayer("hitbox_head") == hitinfo.Hitbox.gameObject.layer)
+                {
+                    hitDamage *= 3;
+                    Debug.Log("headshot!");
+                }
+                else if (LayerMask.NameToLayer("hitbox_leg") == hitinfo.Hitbox.gameObject.layer ||
+                    LayerMask.NameToLayer("hitbox_arm") == hitinfo.Hitbox.gameObject.layer)
+                {
+                    hitDamage /= 2;
+                    Debug.Log("leg or arm shot!");
+                }
+                    
+                else if (LayerMask.NameToLayer("hitbox_foot") == hitinfo.Hitbox.gameObject.layer)
+                {
+                    hitDamage /= 3;
+                    Debug.Log("foot shot!");
+                }
+
                 if (Object.HasStateAuthority)
-                    hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(interractComponent.Owner.Id,
-                                                                                weaponDataMono.weaponShootSettings.hitDamage);
+                    hitinfo.Hitbox.transform.root.GetComponent<HPHandler>().OnTakeDamage(interractComponent.Owner.Id, hitDamage);
 
             }
             //something else hit
